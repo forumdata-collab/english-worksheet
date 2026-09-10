@@ -1065,19 +1065,20 @@ function buildStrokeSvg(svg, ch, strokes, style) {
     return;
   }
 
-  // faint reference glyph
+  // faint reference glyph — render the REAL font (Kalam/Playwrite) as a light
+  // background so learners see the standard letterform; the animated strokes
+  // above it show the handwriting order.
   const ref = document.createElementNS(NS, 'g');
   ref.setAttribute('class', 'sb-ref');
-  strokes.forEach(d => {
-    const p = document.createElementNS(NS, 'path');
-    p.setAttribute('d', d);
-    p.setAttribute('stroke', 'var(--guide-tint)');
-    p.setAttribute('stroke-width', '2.5');
-    p.setAttribute('fill', 'none');
-    p.setAttribute('stroke-linecap', 'round');
-    p.setAttribute('stroke-linejoin', 'round');
-    ref.appendChild(p);
-  });
+  const rt = document.createElementNS(NS, 'text');
+  rt.setAttribute('x', '50');
+  rt.setAttribute('y', '85');
+  rt.setAttribute('text-anchor', 'middle');
+  rt.setAttribute('font-size', '78');
+  rt.setAttribute('fill', 'var(--guide-tint)');
+  rt.setAttribute('font-family', style === 'cursive' ? '"Playwrite", cursive' : '"Kalam", "Segoe Print", cursive');
+  rt.textContent = ch;
+  ref.appendChild(rt);
   svg.appendChild(ref);
 
   // active strokes (animated)
