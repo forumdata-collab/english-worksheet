@@ -90,6 +90,20 @@ body {
 }
 .sample-collapse .sample-list button:hover { background: var(--blue-light); }
 .actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.quick-style {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 10px; padding: 8px 10px; background: #EDF4FB;
+  border-radius: 8px; border: 1px solid var(--blue-light);
+}
+.qs-label { font-size: 0.82em; font-weight: 700; color: var(--blue); }
+.qs-sep { width: 1px; height: 20px; background: #B9D3EA; }
+.qs-btn {
+  border: 1px solid var(--blue-light); background: white; color: var(--blue);
+  border-radius: 16px; padding: 4px 12px; font-size: 0.85em; cursor: pointer;
+  transition: all 0.15s;
+}
+.qs-btn:hover { background: var(--blue-light); }
+.qs-btn.active { background: var(--blue); color: white; border-color: var(--blue); }
 .btn-primary {
   background: var(--blue);
   color: white;
@@ -385,6 +399,17 @@ body {
       <button onclick="setInput('My name is Alex. I am eight years old.')">Sentences</button>
     </div>
   </details>
+  <div class="quick-style">
+    <span class="qs-label">Style:</span>
+    <button class="qs-btn" data-style="print" onclick="setStyle('print')">✍️ Print 正寫</button>
+    <button class="qs-btn" data-style="cursive" onclick="setStyle('cursive')">🖋️ Cursive 草寫</button>
+    <button class="qs-btn" data-style="both" onclick="setStyle('both')">✍️+🖋️ Both</button>
+    <span class="qs-sep"></span>
+    <span class="qs-label">Case:</span>
+    <button class="qs-btn" data-case="both" onclick="setCase('both')">Aa</button>
+    <button class="qs-btn" data-case="upper" onclick="setCase('upper')">A</button>
+    <button class="qs-btn" data-case="lower" onclick="setCase('lower')">a</button>
+  </div>
   <div class="actions">
     <button class="btn-primary" onclick="generate()">📝 Generate Worksheet</button>
     <button class="btn-ghost" onclick="toggleOptions()">⚙️ Options</button>
@@ -444,15 +469,15 @@ body {
     <h3>📝 Content</h3>
     <div class="opt-grid">
       <div class="opt-group">
-        <label>Handwriting style</label>
+        <label>Style</label>
         <select id="optStyle">
-          <option value="print" selected>Print (正寫)</option>
+          <option value="print">Print (正寫)</option>
           <option value="cursive">Cursive (草寫)</option>
-          <option value="both">Both</option>
+          <option value="both" selected>Both</option>
         </select>
       </div>
       <div class="opt-group">
-        <label>Letter case</label>
+        <label>Case</label>
         <select id="optCase">
           <option value="both" selected>Both Aa</option>
           <option value="upper">Uppercase A</option>
@@ -585,14 +610,33 @@ document.addEventListener('DOMContentLoaded', () => {
       if (saved.name) document.getElementById('optName').value = saved.name;
     }
   } catch(e) {}
+  // sync quick-style buttons with current select values
+  syncQuickBtns();
   generate();
 });
+
+function syncQuickBtns() {
+  const st = document.getElementById('optStyle').value;
+  document.querySelectorAll('.qs-btn[data-style]').forEach(b => b.classList.toggle('active', b.dataset.style === st));
+  const cs = document.getElementById('optCase').value;
+  document.querySelectorAll('.qs-btn[data-case]').forEach(b => b.classList.toggle('active', b.dataset.case === cs));
+}
 
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function setInput(text) { document.getElementById('inputText').value = text; }
+function setStyle(s) {
+  document.getElementById('optStyle').value = s;
+  document.querySelectorAll('.qs-btn[data-style]').forEach(b => b.classList.toggle('active', b.dataset.style === s));
+  generate();
+}
+function setCase(c) {
+  document.getElementById('optCase').value = c;
+  document.querySelectorAll('.qs-btn[data-case]').forEach(b => b.classList.toggle('active', b.dataset.case === c));
+  generate();
+}
 function esc(s) {
   const d = document.createElement('div');
   d.textContent = s;
