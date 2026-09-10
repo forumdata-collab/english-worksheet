@@ -1,18 +1,21 @@
 /* Self-hosted handwriting fonts — no Google Fonts dependency */
+/* Print 正寫: Andika (SIL) — designed for literacy learners: upright,
+   unjoined, unambiguous letterforms (standard school print). */
 @font-face {
-  font-family: 'Kalam';
+  font-family: 'Andika';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(kalam-400.woff2) format('woff2');
+  src: url(andika-400.woff2) format('woff2');
 }
 @font-face {
-  font-family: 'Kalam';
+  font-family: 'Andika';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(kalam-700.woff2) format('woff2');
+  src: url(andika-400.woff2) format('woff2');
 }
+/* Cursive 草寫: Playwrite USA Trad (school cursive engine, OFL) */
 @font-face {
   font-family: 'Playwrite';
   font-style: normal;

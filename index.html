@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>English Word Practice — Handwriting Worksheet (Print & Cursive · A4)</title>
-<link href="fonts/hand.css" rel="stylesheet">
+<link href="fonts/hand.css?v=andika3" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>✏️</text></svg>">
 <style>
 :root {
@@ -49,7 +49,7 @@ body {
   top: -40px;
   font-size: 220px;
   opacity: 0.08;
-  font-family: "Playwrite", "Kalam", cursive;
+  font-family: "Playwrite", "Andika", cursive;
 }
 .hero h1 { font-size: 1.6em; font-weight: 700; letter-spacing: 0.04em; }
 .hero p { opacity: 0.92; margin-top: 4px; font-size: 0.88em; }
@@ -69,7 +69,7 @@ body {
   border: 2px solid #cfe0ee;
   border-radius: 8px;
   font-size: 1.15em;
-  font-family: "Kalam", "Segoe UI", cursive;
+  font-family: "Andika", "Segoe UI", cursive;
   resize: vertical;
   transition: border-color 0.2s;
   background: white;
@@ -228,8 +228,8 @@ body {
   font-size: var(--cell-font, 62px);
   transform-origin: center;
 }
-.hw-cell .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; margin-bottom: calc(var(--cell-font) * -0.034); }
-.hw-cell .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-font) * 0.052); }
+.hw-cell .glyph-layer span.print { font-family: "Andika", "Segoe UI", sans-serif; margin-bottom: calc(var(--cell-font) * 0.2275 - 1px); }
+.hw-cell .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-font) * 0.2775 - 1px); }
 .hw-cell .glyph-layer .guide-glyph { color: var(--guide-tint); }
 .hw-cell .glyph-layer .demo-glyph { color: var(--ink); }
 .cell-guides {
@@ -277,15 +277,15 @@ body {
   font-size: calc(var(--cell-font, 62px) * 0.75);
   white-space: nowrap;
 }
-.word-line .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.75 * 0.126); }
-.word-line .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.75 * 0.176); }
+.word-line .glyph-layer span.print { font-family: "Andika", "Segoe UI", sans-serif; margin-bottom: calc(var(--cell-practice, 96px) * 0.75 * 0.2956 - 1px); }
+.word-line .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.75 * 0.3276 - 1px); }
 /* sentence lines are 0.5× scale — margins scale with cell, font with 0.5 */
 .sentence-block .glyph-layer span.print,
 .sentence-block .glyph-layer span.cursive {
   font-size: calc(var(--cell-font, 62px) * 0.5);
 }
-.sentence-block .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.5 * 0.126); }
-.sentence-block .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.5 * 0.176); }
+.sentence-block .glyph-layer span.print { font-family: "Andika", "Segoe UI", sans-serif; margin-bottom: calc(var(--cell-practice, 96px) * 0.5 * 0.2956 - 1px); }
+.sentence-block .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.5 * 0.3276 - 1px); }
 .word-line .glyph-layer .guide-glyph { color: var(--guide-tint); }
 .word-line .glyph-layer .demo-glyph { color: var(--ink); }
 .word-line .cell-guides line.g-top { display: none; }
@@ -425,6 +425,7 @@ body {
     <button class="qs-btn section-btn" data-section="letters" onclick="setSection('letters')">🔤 Letters</button>
     <button class="qs-btn section-btn" data-section="words" onclick="setSection('words')">📝 Words</button>
     <button class="qs-btn section-btn" data-section="copybook" onclick="setSection('copybook')">📖 Copybook <small style="font-weight:400">單字+句子</small></button>
+    <button class="qs-btn section-btn" data-section="sentences" onclick="setSection('sentences')">✒️ 淨句子</button>
   </div>
   <div class="actions">
     <button class="btn-primary" onclick="generate()">📝 Generate Worksheet</button>
@@ -506,6 +507,7 @@ body {
           <option value="letters">Letters only</option>
           <option value="words">Words only</option>
           <option value="copybook" selected>Copybook (words + sentences)</option>
+          <option value="sentences">Sentences only</option>
         </select>
       </div>
       <div class="opt-group">
@@ -561,7 +563,7 @@ body {
   </div>
   <div id="wsContent"></div>
   <div class="ws-footer">
-    <div id="wsFooter">Fonts: Kalam &amp; Playwrite (OFL) · Made with ✏️</div>
+    <div id="wsFooter">Fonts: Andika &amp; Playwrite (OFL) · Made with ✏️</div>
     <div class="footer-links">
       <a href="https://ko-fi.com/forumdata" target="_blank" rel="noopener">☕ Buy me a coffee</a>
       <a href="mailto:forumdata@gmail.com">✉️ Contact</a>
@@ -635,7 +637,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Eager font warm-up — same lesson as chineseword: swap+preload so the
   // handwriting fonts render immediately instead of falling back to system
   // fonts on first paint (esp. before print/PDF).
-  preloadFonts(['Kalam', 'Playwrite']);
+  preloadFonts(['Andika', 'Playwrite']);
   // wait for the real glyphs, then re-render so baseline alignment uses
   // the actual font metrics (fallback → webfont changes the ink box)
   document.fonts.ready.then(() => { setTimeout(() => { if (document.querySelector('.demo-glyph')) generate(); }, 30); });
@@ -807,6 +809,11 @@ function generate() {
     currentLetters = dedup ? [...new Set(ls.map(l => l.toLowerCase()))] : ls.map(l => l.toLowerCase());
     currentWords = [];
     currentSentences = [];
+  } else if (section === 'sentences') {
+    currentLetters = [];
+    currentWords = [];
+    currentSentences = parseSentences(raw);
+    if (!currentSentences.length) { showToast('No sentences found'); return; }
   } else {
     currentLetters = [];
     currentWords = [...new Set(parseWords(raw))];
@@ -857,7 +864,7 @@ function renderWorksheet() {
   const content = document.getElementById('wsContent');
 
   // screen sizing — uniform ratio (0.64) across all sizes so baseline gap
-  // stays constant; per-font CSS margin corrections handle Kalam vs Playwrite
+  // stays constant; per-font CSS margin corrections handle Andika vs Playwrite
   // metric differences (see .glyph-layer span.print/.cursive margin-bottom).
   const size = SIZE_PX[o.size] || 96;
   ws.style.setProperty('--cell-practice', size + 'px');
@@ -954,6 +961,7 @@ function renderWorksheet() {
       html += `<div class="word-info">`;
       html += `<span class="word-name">${esc(w)} <small>${w.length} letters</small></span>`;
       html += ` <button class="btn-ghost" onclick="speak('${esc(w)}','${accent}')">🔊</button>`;
+      html += ` <button class="btn-ghost" onclick="showStrokes('${esc(w).replace(/'/g,"\\'")}')">✍️ Show</button>`;
       html += `</div>`;
       // demo line
       stylesLoop(usePrint, useCursive, st => {
@@ -978,6 +986,7 @@ function renderWorksheet() {
       html += `<div class="word-info">`;
       html += `<span class="word-name">${esc(s)}</span>`;
       html += ` <button class="btn-ghost" onclick="speak('${esc(s).replace(/'/g,"\\'")}','${accent}')">🔊</button>`;
+      html += ` <button class="btn-ghost" onclick="showStrokes('${esc(s).replace(/'/g,"\\'")}')">✍️ Show</button>`;
       html += `</div>`;
       stylesLoop(usePrint, useCursive, st => {
         html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
@@ -1015,10 +1024,18 @@ function phonetic(ch) {
 // ===== STROKE MODAL (animated stroke-order reveal) =====
 let strokeTimers = [];
 let strokeCurrentLetter = '';
+let strokeNavList = null;   // when set (e.g. from a word's Show button) prev/next walks this list
 // LETTER_STROKES is a global const from a separate data script (loaded before
 // this one). Do NOT re-declare it here — that would shadow the data or collide.
 
-function openStroke(ch) {
+function showStrokes(text) {
+  const letters = String(text).toLowerCase().replace(/[^a-z]/g, '').split('');
+  if (!letters.length) { showToast('No letters to show'); return; }
+  openStroke(letters[0], letters);
+}
+
+function openStroke(ch, navList) {
+  strokeNavList = (navList && navList.length) ? navList.slice() : null;
   const up = ch.toUpperCase();
   const lo = ch.toLowerCase();
   document.getElementById('strokeModalTitle').textContent = `Letter: ${up} (${lo})`;
@@ -1084,13 +1101,13 @@ function buildStrokeSvg(svg, ch, strokes, style) {
     t.setAttribute('x', '50'); t.setAttribute('y', '85');
     t.setAttribute('text-anchor', 'middle');
     t.setAttribute('font-size', '70');
-    t.setAttribute('font-family', style === 'cursive' ? '"Playwrite", cursive' : '"Kalam", "Segoe Print", cursive');
+    t.setAttribute('font-family', style === 'cursive' ? '"Playwrite", cursive' : '"Andika", "Segoe UI", sans-serif');
     t.textContent = ch;
     svg.appendChild(t);
     return;
   }
 
-  // faint reference glyph — render the REAL font (Kalam/Playwrite) as a light
+  // faint reference glyph — render the REAL font (Andika/Playwrite) as a light
   // background so learners see the standard letterform; the animated strokes
   // above it show the handwriting order.
   const ref = document.createElementNS(NS, 'g');
@@ -1101,7 +1118,7 @@ function buildStrokeSvg(svg, ch, strokes, style) {
   rt.setAttribute('text-anchor', 'middle');
   rt.setAttribute('font-size', '78');
   rt.setAttribute('fill', 'var(--guide-tint)');
-  rt.setAttribute('font-family', style === 'cursive' ? '"Playwrite", cursive' : '"Kalam", "Segoe Print", cursive');
+  rt.setAttribute('font-family', style === 'cursive' ? '"Playwrite", cursive' : '"Andika", "Segoe UI", sans-serif');
   rt.textContent = ch;
   ref.appendChild(rt);
   svg.appendChild(ref);
@@ -1198,20 +1215,26 @@ function animateSvgBox(svg, note, box, vi) {
   return t;  // delay timeout
 }
 
+function strokeNavLetters() {
+  return (strokeNavList && strokeNavList.length) ? strokeNavList : currentLetters;
+}
 function updateStrokeNav() {
+  const nav = strokeNavLetters();
   const pos = document.getElementById('strokeNavPos');
   if (pos) {
-    const idx = currentLetters.indexOf(strokeCurrentLetter);
-    pos.textContent = idx >= 0 ? `${idx + 1} / ${currentLetters.length}` : '';
+    const idx = nav.indexOf(String(strokeCurrentLetter).toLowerCase());
+    pos.textContent = idx >= 0 ? `${idx + 1} / ${nav.length}` : '';
   }
 }
 function strokePrev() {
-  const idx = currentLetters.indexOf(strokeCurrentLetter);
-  if (idx > 0) openStroke(currentLetters[idx - 1]);
+  const nav = strokeNavLetters();
+  const idx = nav.indexOf(String(strokeCurrentLetter).toLowerCase());
+  if (idx > 0) openStroke(nav[idx - 1]);
 }
 function strokeNext() {
-  const idx = currentLetters.indexOf(strokeCurrentLetter);
-  if (idx >= 0 && idx < currentLetters.length - 1) openStroke(currentLetters[idx + 1]);
+  const nav = strokeNavLetters();
+  const idx = nav.indexOf(String(strokeCurrentLetter).toLowerCase());
+  if (idx >= 0 && idx < nav.length - 1) openStroke(nav[idx + 1]);
 }
 function strokeReplay() {
   clearStrokeTimers();
@@ -1256,15 +1279,15 @@ function toggleQuizMode() {
 // ===== PRINT =====
 function printWorksheet() {
   // Chineseword lesson: ensure fonts are fully loaded before printing.
-  // If Playwrite/Kalam aren't ready, print/PDF shows fallback system font.
-  preloadFonts(['Kalam', 'Playwrite']).then(() => { window.print(); });
+  // If Playwrite/Andika aren't ready, print/PDF shows fallback system font.
+  preloadFonts(['Andika', 'Playwrite']).then(() => { window.print(); });
 }
 
 // ===== FONT BOOTSTRAP =====
 // Redundant backup for slow-connection scenarios.
 // The primary load is in DOMContentLoaded (before first render).
 window.addEventListener('load', () => {
-  preloadFonts(['Kalam', 'Playwrite']);
+  preloadFonts(['Andika', 'Playwrite']);
 });
 
 // ===== BACK TO TOP =====
