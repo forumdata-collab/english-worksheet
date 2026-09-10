@@ -596,8 +596,7 @@ body {
 <div class="audio-toast" id="audioToast"></div>
 <button class="back-to-top no-print" id="backToTop" title="Back to top">↑</button>
 
-<script src="strokes.js"></script>
-<script src="strokes_cursive.js"></script>
+<script src="strokes_font.js"></script>
 <script>
 // ===== STATE =====
 let currentLetters = [];
@@ -1045,11 +1044,11 @@ function openStroke(ch, navList) {
 
   // variants: {label, sub, ch, strokes}
   const variants = [
-    { label: 'Print', sub: 'Uppercase', ch: up, strokes: (typeof LETTER_STROKES !== 'undefined' && LETTER_STROKES[up]) || null },
-    { label: 'Print', sub: 'Lowercase', ch: lo, strokes: (typeof LETTER_STROKES !== 'undefined' && LETTER_STROKES[lo]) || null },
-    { label: 'Cursive', sub: 'Uppercase', ch: up, strokes: (typeof LETTER_STROKES_CURSIVE !== 'undefined' && LETTER_STROKES_CURSIVE[up]) || null },
-    { label: 'Cursive', sub: 'Lowercase', ch: lo, strokes: (typeof LETTER_STROKES_CURSIVE !== 'undefined' && LETTER_STROKES_CURSIVE[lo]) || null },
-  ];
+    { label: 'Print', sub: 'Uppercase', ch: up, style: 'print' },
+    { label: 'Print', sub: 'Lowercase', ch: lo, style: 'print' },
+    { label: 'Cursive', sub: 'Uppercase', ch: up, style: 'cursive' },
+    { label: 'Cursive', sub: 'Lowercase', ch: lo, style: 'cursive' },
+  ].map(v => ({ ...v, paths: strokePathsFor(v.style, v.ch) }));
 
   let animTimers = [];
   variants.forEach((v, vi) => {
@@ -1059,16 +1058,16 @@ function openStroke(ch, navList) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 100 120');
     svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-    buildStrokeSvg(svg, v.ch, v.strokes, v.label.toLowerCase());
+    buildStrokeSvg(svg, v.ch, v.paths, v.style);
     box.appendChild(svg);
     const note = document.createElement('div');
     note.className = 'sb-note';
-    note.textContent = v.strokes ? v.strokes.length + ' stroke' + (v.strokes.length === 1 ? '' : 's') : '';
+    note.textContent = v.paths && v.paths.length ? v.paths.length + ' stroke' + (v.paths.length === 1 ? '' : 's') : '';
     box.appendChild(note);
     grid.appendChild(box);
 
     // animate each box
-    if (v.strokes && v.strokes.length) {
+    if (v.paths && v.paths.length) {
       const timer = animateSvgBox(svg, note, box, vi);
       if (timer) animTimers.push(timer);
     }
@@ -1085,7 +1084,40 @@ function openStroke(ch, navList) {
   updateStrokeNav();
 }
 
-function buildStrokeSvg(svg, ch, strokes, style) {
+function strokePathsFor(style, ch) {
+  if (typeof LETTER_PATHS === 'undefined' || !LETTER_PATHS[style]) return null;
+  return LETTER_PATHS[style][ch] || null;
+}
+
+// Cap height of the letter inside the Show box, in viewBox units. The four-line
+// guides put the baseline at y=65 and the ascender line at y=5, so 46 units gives
+// the same cap-height : ruling ratio as the practice cells (cell font = 0.64 x
+// cell, Andika cap = 0.72em -> 0.46 of the ruling height).
+const SB_CAP_UNITS = 46;
+const SB_BASELINE = 65;
+
+function strokeFontSize(style) {
+  const capRatio = style === 'cursive' ? 1.02 : 0.72;   // measured in-browser
+  return SB_CAP_UNITS / capRatio;
+}
+
+/**
+ * Reference glyph + masked reveal.
+ *
+ *   watermark : the REAL font glyph, faint, always visible
+ *   ink       : the SAME font glyph, dark, revealed through a mask built from the
+ *               pen centreline strokes swept with a round tip
+ *
+ * Because the visible ink IS the font glyph, the animated strokes cannot disagree
+ * with the letterform behind them. (The old hand-drawn strokes did: their
+ * lowercase x-height was 30 units where the font needs 56.7, their baseline sat
+ * 15 units too high, and their letterform was a different shape entirely.)
+ * The centreline paths only decide the writing order; they were extracted from
+ * these same glyphs so they follow each letter's own skeleton.
+ */
+let _sbUid = 0;
+
+function buildStrokeSvg(svg, ch, paths, style) {
   const NS = 'http://www.w3.org/2000/svg';
   // guides
   const gl = document.createElementNS(NS, 'g');
@@ -1095,120 +1127,162 @@ function buildStrokeSvg(svg, ch, strokes, style) {
     '<line x1="0" y1="96" x2="100" y2="96" stroke="#C3D6E8"/>';
   svg.appendChild(gl);
 
-  if (!strokes || !strokes.length) {
-    // fallback: static text glyph
+  const fam = style === 'cursive' ? '"Playwrite", cursive' : '"Andika", "Segoe UI", sans-serif';
+  const FS = strokeFontSize(style);
+  const uid = 'sbMask' + (++_sbUid);
+
+  const makeText = (fill) => {
     const t = document.createElementNS(NS, 'text');
-    t.setAttribute('x', '50'); t.setAttribute('y', '85');
+    t.setAttribute('x', '0');
+    t.setAttribute('y', '0');
     t.setAttribute('text-anchor', 'middle');
-    t.setAttribute('font-size', '70');
-    t.setAttribute('font-family', style === 'cursive' ? '"Playwrite", cursive' : '"Andika", "Segoe UI", sans-serif');
+    t.setAttribute('font-size', '1');
+    t.setAttribute('font-family', fam);
+    t.setAttribute('fill', fill);
     t.textContent = ch;
-    svg.appendChild(t);
-    return;
+    return t;
+  };
+
+  // glyph space: x=0 is the glyph centre, y=0 the baseline (y grows downwards)
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('transform', 'translate(50,' + SB_BASELINE + ') scale(' + FS + ')');
+
+  g.appendChild(makeText('var(--guide-tint)'));          // watermark
+
+  if (paths && paths.length) {
+    let segCount = 0;
+    const defs = document.createElementNS(NS, 'defs');
+    const mask = document.createElementNS(NS, 'mask');
+    mask.setAttribute('id', uid);
+    mask.setAttribute('maskUnits', 'userSpaceOnUse');
+    mask.setAttribute('x', '-2'); mask.setAttribute('y', '-2');
+    mask.setAttribute('width', '4'); mask.setAttribute('height', '4');
+    const bg = document.createElementNS(NS, 'rect');
+    bg.setAttribute('x', '-2'); bg.setAttribute('y', '-2');
+    bg.setAttribute('width', '4'); bg.setAttribute('height', '4');
+    bg.setAttribute('fill', 'black');
+    mask.appendChild(bg);
+    // one mask path per skeleton segment; segments of the same teaching stroke
+    // carry the same data-group so a single number covers them
+    const numSeg = [];
+    paths.forEach((grp, gi) => {
+      const segs = Array.isArray(grp) ? grp : [grp];
+      numSeg.push(segCount);
+      segs.forEach(d => {
+        const p = document.createElementNS(NS, 'path');
+        p.setAttribute('d', d);
+        p.setAttribute('fill', 'none');
+        p.setAttribute('stroke', 'white');
+        p.setAttribute('stroke-width', String(typeof STROKE_WIDTH_EM === 'number' ? STROKE_WIDTH_EM : 0.2));
+        p.setAttribute('stroke-linecap', 'round');
+        p.setAttribute('stroke-linejoin', 'round');
+        p.style.opacity = '0';
+        p.dataset.len = 0;
+        p.dataset.group = String(gi);
+        mask.appendChild(p);
+        segCount++;
+      });
+    });
+    defs.appendChild(mask);
+    svg.appendChild(defs);
+
+    const ink = makeText('var(--ink)');
+    ink.setAttribute('mask', 'url(#' + uid + ')');
+    g.appendChild(ink);
+
+    // pen tip travelling along the stroke being written
+    const pen = document.createElementNS(NS, 'circle');
+    pen.setAttribute('r', '0.055');
+    pen.setAttribute('fill', '#C0392B');
+    pen.style.opacity = '0';
+    g.appendChild(pen);
+
+    // order labels live outside the mask so they are always visible
+    const nums = document.createElementNS(NS, 'g');
+    paths.forEach((d, i) => {
+      const t = document.createElementNS(NS, 'text');
+      t.setAttribute('font-size', '0.20');
+      t.setAttribute('fill', '#C0392B');
+      t.setAttribute('font-weight', '700');
+      t.setAttribute('text-anchor', 'middle');
+      t.textContent = String(i + 1);
+      nums.appendChild(t);
+    });
+    g.appendChild(nums);
+
+    svg._sbPaths = [...mask.querySelectorAll('path')];
+    svg._sbNums = [...nums.querySelectorAll('text')];
+    svg._sbNumSegs = numSeg;
+    svg._sbPen = pen;
   }
-
-  // faint reference glyph — render the REAL font (Andika/Playwrite) as a light
-  // background so learners see the standard letterform; the animated strokes
-  // above it show the handwriting order.
-  const ref = document.createElementNS(NS, 'g');
-  ref.setAttribute('class', 'sb-ref');
-  const rt = document.createElementNS(NS, 'text');
-  rt.setAttribute('x', '50');
-  rt.setAttribute('y', '85');
-  rt.setAttribute('text-anchor', 'middle');
-  rt.setAttribute('font-size', '78');
-  rt.setAttribute('fill', 'var(--guide-tint)');
-  rt.setAttribute('font-family', style === 'cursive' ? '"Playwrite", cursive' : '"Andika", "Segoe UI", sans-serif');
-  rt.textContent = ch;
-  ref.appendChild(rt);
-  svg.appendChild(ref);
-
-  // active strokes (animated)
-  const active = document.createElementNS(NS, 'g');
-  active.setAttribute('class', 'sb-active');
-  strokes.forEach((d, i) => {
-    const p = document.createElementNS(NS, 'path');
-    p.setAttribute('d', d);
-    p.setAttribute('stroke', 'var(--ink)');
-    p.setAttribute('stroke-width', '3');
-    p.setAttribute('fill', 'none');
-    p.setAttribute('stroke-linecap', 'round');
-    p.setAttribute('stroke-linejoin', 'round');
-    p.style.opacity = i === 0 ? '1' : '0.05';
-    p.dataset.len = 0;
-    active.appendChild(p);
-  });
-  svg.appendChild(active);
-
-  // number labels
-  const nums = document.createElementNS(NS, 'g');
-  nums.setAttribute('class', 'sb-nums');
-  strokes.forEach((d, i) => {
-    const t = document.createElementNS(NS, 'text');
-    t.setAttribute('font-size', '7');
-    t.setAttribute('fill', '#C0392B');
-    t.setAttribute('font-weight', '700');
-    t.setAttribute('text-anchor', 'middle');
-    t.textContent = String(i + 1);
-    nums.appendChild(t);
-  });
-  svg.appendChild(nums);
-  svg._sbNums = [...nums.querySelectorAll('text')];
-  svg._sbActive = [...active.querySelectorAll('path')];
-  svg._sbRef = ref;
+  svg.appendChild(g);
 }
 
 function placeNumLabels(svg) {
   // number at each stroke's START (teaches where to begin the stroke)
   const nums = svg._sbNums || [];
-  const strokes = svg._sbActive || [];
-  strokes.forEach((p, i) => {
-    if (!nums[i]) return;
+  const paths = svg._sbPaths || [];
+  const starts = svg._sbNumSegs || paths.map((_, i) => i);
+  starts.forEach((si, i) => {
+    const p = paths[si];
+    if (!nums[i] || !p) return;
     const len = parseFloat(p.dataset.len) || 0;
-    const at = Math.max(2, Math.min(len * 0.08, len - 0.1));
+    const at = Math.max(1, Math.min(len * 0.06, len - 0.1));
     try {
       const pt = p.getPointAtLength(at);
-      nums[i].setAttribute('x', pt.x - 1);
-      nums[i].setAttribute('y', pt.y - 3);
+      nums[i].setAttribute('x', (pt.x - 0.02).toFixed(4));
+      nums[i].setAttribute('y', (pt.y - 0.12).toFixed(4));
     } catch(e) {
-      nums[i].setAttribute('x', 8 + i * 10);
-      nums[i].setAttribute('y', 8 + i * 10);
+      nums[i].setAttribute('x', '0');
+      nums[i].setAttribute('y', '0');
     }
   });
 }
 
 function animateSvgBox(svg, note, box, vi) {
-  const paths = svg._sbActive || [];
+  const paths = svg._sbPaths || [];
   if (!paths.length) return null;
-  const DURATION = 600;
+  const DURATION = 620;
   const STEP = 16;
   let idx = 0;
   let startTs = Date.now();
-  // compute lengths after attachment
+  let done = false;
   paths.forEach(p => { if (!p.dataset.len || p.dataset.len == 0) p.dataset.len = p.getTotalLength() || 60; });
   placeNumLabels(svg);
 
   // stagger start across the 4 boxes
   const delay = vi * 450;
   const t = setTimeout(() => {
+    if (paths[0]) paths[0].style.opacity = '1';
+    if (svg._sbPen) svg._sbPen.style.opacity = '1';
     const timer = setInterval(() => {
+      if (done) return;
       const elapsed = Date.now() - startTs;
       const el = Math.min(elapsed / DURATION, 1);
+      const cur = paths[idx];
+      const len = parseFloat(cur.dataset.len) || 60;
+      // a completed stroke stays revealed; the next one starts from scratch
+      cur.setAttribute('stroke-dashoffset', el >= 1 ? 0 : len * (1 - el));
+      if (svg._sbPen) {
+        try {
+          const pt = cur.getPointAtLength(len * el);
+          svg._sbPen.setAttribute('cx', pt.x.toFixed(4));
+          svg._sbPen.setAttribute('cy', pt.y.toFixed(4));
+          svg._sbPen.style.opacity = el >= 1 ? '0.25' : '1';
+        } catch(e) {}
+      }
       if (el >= 1) {
-        paths[idx].setAttribute('stroke-dashoffset', 0);
         if (idx + 1 < paths.length) {
           idx++;
           paths[idx].style.opacity = '1';
-          paths[idx - 1].style.opacity = '0.35';
           startTs = Date.now();
         } else {
-          if (note) note.textContent = '✓ done';
+          if (svg._sbPen) svg._sbPen.style.opacity = '0';
+          if (note) note.textContent += ' \u2713';
+          done = true;
           clearInterval(timer);
         }
-        return;
       }
-      const remain = paths[idx].dataset.len * (1 - el);
-      paths[idx].setAttribute('stroke-dashoffset', remain);
     }, STEP);
     strokeTimers.push(timer);
   }, delay);
