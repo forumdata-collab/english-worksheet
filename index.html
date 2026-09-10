@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>English Word Practice — Handwriting Worksheet (Print & Cursive · A4)</title>
+<link href="fonts/hand.css" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>✏️</text></svg>">
+<style>
+:root {
+  --bg: #F4F9FB;
+  --ink: #26333A;
+  --blue: #1F6FB2;
+  --blue-light: #D6EAF8;
+  --blue-grid: #9FC4E0;
+  --guide-line: #A9C8E0;
+  --guide-tint: #D3E6F3;
+  --green: #2E7D4F;
+  --paper: #FDFEFF;
+  --card-bg: #FFFFFF;
+  --shadow: rgba(15, 60, 100, 0.08);
+  --radius: 10px;
+  --cell-practice: 96px;
+  --cell-font: 62px;
+  --cell-guide-font: 62px;
+  --glyph-bottom: 15%;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: "Segoe UI", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.screen-only { max-width: 960px; margin: 0 auto; padding: 20px; }
+.hero {
+  text-align: center;
+  padding: 20px 16px 16px;
+  background: linear-gradient(135deg, #1F6FB2 0%, #0E4D82 100%);
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: 'Aa';
+  position: absolute;
+  right: 10px;
+  top: -40px;
+  font-size: 220px;
+  opacity: 0.08;
+  font-family: "Caveat", "Kalam", cursive;
+}
+.hero h1 { font-size: 1.6em; font-weight: 700; letter-spacing: 0.04em; }
+.hero p { opacity: 0.92; margin-top: 4px; font-size: 0.88em; }
+.input-section {
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin: 10px auto;
+  max-width: 960px;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+.input-section label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.95em; }
+.input-section textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 14px;
+  border: 2px solid #cfe0ee;
+  border-radius: 8px;
+  font-size: 1.15em;
+  font-family: "Kalam", "Segoe UI", cursive;
+  resize: vertical;
+  transition: border-color 0.2s;
+  background: white;
+}
+.input-section textarea:focus { outline: none; border-color: var(--blue); }
+.sample-collapse { margin-top: 8px; }
+.sample-collapse summary { cursor: pointer; font-size: 0.85em; color: var(--blue); }
+.sample-collapse .sample-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.sample-collapse .sample-list button {
+  border: 1px solid var(--blue-light);
+  background: white;
+  color: var(--blue);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 0.85em;
+  cursor: pointer;
+}
+.sample-collapse .sample-list button:hover { background: var(--blue-light); }
+.actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.btn-primary {
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: #18588F; }
+.btn-ghost {
+  background: white;
+  color: var(--blue);
+  border: 2px solid var(--blue);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 0.95em;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-ghost:hover { background: var(--blue-light); }
+
+/* ===== OPTIONS ===== */
+.options {
+  background: var(--paper);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin: 10px auto;
+  max-width: 960px;
+  box-shadow: 0 2px 12px var(--shadow);
+  display: none;
+}
+.options.show { display: block; }
+.opt-section { margin-bottom: 12px; }
+.opt-section h3 {
+  font-size: 0.8em; font-weight: 700; color: var(--blue);
+  margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid #e8f0f8;
+  letter-spacing: 0.03em;
+}
+.opt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.opt-group { display: flex; flex-direction: column; gap: 4px; }
+.opt-group label { font-size: 0.82em; color: #555; font-weight: 600; }
+.opt-group select, .opt-group input[type=number], .opt-group input[type=text] {
+  border: 1px solid #cfe0ee; border-radius: 6px; padding: 6px 8px; font-size: 0.9em; background: white;
+}
+.toggle-row { display: flex; align-items: center; gap: 6px; }
+.toggle-row label { font-size: 0.85em; color: #333; font-weight: 500; }
+.collapse-wrap { margin-top: 4px; }
+.advance-collapse summary { cursor: pointer; font-size: 0.82em; color: var(--blue); }
+
+/* ===== PRINT BAR ===== */
+.print-bar {
+  max-width: 960px; margin: 10px auto; padding: 10px 16px;
+  background: var(--paper); border-radius: var(--radius);
+  box-shadow: 0 2px 12px var(--shadow);
+  display: none; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.print-bar.show { display: flex; }
+.print-bar .btn-primary { padding: 8px 18px; }
+.bar-sep { width: 1px; height: 28px; background: #dde8f2; }
+
+/* ===== WORKSHEET ===== */
+#worksheet {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 20px var(--shadow);
+  max-width: 960px;
+  margin: 16px auto;
+  padding: 28px;
+  display: none;
+}
+#worksheet.show { display: block; }
+.ws-header { text-align: center; margin-bottom: 20px; }
+.ws-title { font-size: 1.5em; font-weight: 700; color: var(--blue); letter-spacing: 0.05em; }
+.ws-meta { display: flex; justify-content: center; gap: 24px; margin-top: 6px; font-size: 0.9em; color: #555; }
+.ws-section-title {
+  font-size: 1.1em; font-weight: 700; color: var(--blue);
+  margin: 24px 0 12px; padding-bottom: 6px; border-bottom: 2px solid var(--blue-light);
+}
+.ws-section-title .en-hint { font-size: 0.6em; color: #99aabb; font-weight: 500; margin-left: 6px; }
+
+/* ===== LETTER CARDS ===== */
+.letter-card {
+  border: 1px solid #e3eef7;
+  border-radius: 10px;
+  padding: 14px;
+  margin-bottom: 14px;
+  background: var(--card-bg);
+  page-break-inside: avoid;
+}
+.letter-info { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
+.letter-demo { flex-shrink: 0; }
+.letter-glyph {
+  display: inline-block;
+  font-size: var(--cell-font);
+  line-height: 1;
+  position: relative;
+}
+.letter-glyph.print { font-family: "Kalam", "Segoe Print", cursive; font-weight: 400; }
+.letter-glyph.cursive { font-family: "Caveat", cursive; font-weight: 400; }
+.letter-details { flex: 1; min-width: 0; }
+.letter-details .letter-name { font-size: 1.1em; font-weight: 700; }
+.letter-details .letter-name small { color: #8aa; font-weight: 500; font-size: 0.7em; }
+.letter-details .letter-desc { font-size: 0.85em; color: #667; }
+.letter-details .letter-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+
+/* ===== HANDWRITING CELL (4-line grid, print-safe SVG) ===== */
+.hw-cell {
+  position: relative;
+  width: var(--cell-practice, 96px);
+  height: var(--cell-practice, 96px);
+  background: white;
+  border: 2px solid var(--blue-grid);
+  flex-shrink: 0;
+}
+.hw-cell .glyph-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  bottom: var(--glyph-bottom, 15%);
+  line-height: 1;
+  z-index: 3;
+}
+.hw-cell .glyph-layer span {
+  display: inline-block;
+  line-height: 1;
+  font-size: var(--cell-font, 62px);
+  transform-origin: center;
+}
+.hw-cell .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; }
+.hw-cell .glyph-layer span.cursive { font-family: "Caveat", cursive; }
+.hw-cell .glyph-layer .guide-glyph { color: var(--guide-tint); }
+.hw-cell .glyph-layer .demo-glyph { color: var(--ink); }
+.cell-guides {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 1; display: block;
+}
+.cell-guides line { stroke: var(--guide-line); stroke-width: 1.4; vector-effect: non-scaling-stroke; }
+.cell-guides line.g-baseline { stroke: #7FA8C8; stroke-width: 2.2; }
+.cell-guides line.g-midline { stroke-dasharray: 5 4; }
+.cell-guides line.g-bottom { stroke: #C3D6E8; }
+
+/* guide modes */
+.guide-dashed .cell-guides line { stroke-dasharray: 4 4; }
+.guide-blank .cell-guides { display: none; }
+
+/* ===== PRACTICE ROWS ===== */
+.practice-row { display: flex; flex-wrap: wrap; gap: 0; margin-top: 4px; }
+.practice-row[data-perrow] .practice-cell {
+  width: auto; height: auto;
+  flex: 0 0 calc((100% - 4px * (var(--n, 6) - 1)) / var(--n));
+  aspect-ratio: 1;
+}
+
+/* ===== WORD / SENTENCE LINES ===== */
+.word-block { margin-bottom: 18px; page-break-inside: avoid; }
+.word-block .word-info { margin-bottom: 6px; }
+.word-block .word-name { font-weight: 700; font-size: 1em; }
+.word-block .word-name small { color: #8aa; font-weight: 500; margin-left: 6px; }
+.word-line {
+  position: relative;
+  height: calc(var(--cell-practice, 96px) * 0.75);
+  margin: 8px 0;
+  border: 2px solid var(--blue-grid);
+  border-top: none;
+}
+.word-line .glyph-layer {
+  position: absolute; inset: 0; display: flex; align-items: flex-end;
+  justify-content: center;
+  bottom: calc(var(--glyph-bottom, 15%) * 0.75);
+  line-height: 1; z-index: 3;
+}
+.word-line .glyph-layer span {
+  display: inline-block; line-height: 1;
+  font-size: calc(var(--cell-font, 62px) * 0.75);
+  white-space: nowrap;
+}
+.word-line .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; }
+.word-line .glyph-layer span.cursive { font-family: "Caveat", cursive; }
+.word-line .glyph-layer .guide-glyph { color: var(--guide-tint); }
+.word-line .glyph-layer .demo-glyph { color: var(--ink); }
+.word-line .cell-guides line.g-top { display: none; }
+
+/* ===== MODAL ===== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10, 40, 70, 0.5);
+  display: none; align-items: center; justify-content: center; z-index: 100;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: white; border-radius: 12px; padding: 22px;
+  max-width: 560px; width: 100%; max-height: 85vh; overflow: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+.modal-box h3 { color: var(--blue); margin-bottom: 12px; }
+.modal-box .modal-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.stroke-stage {
+  background: #fff; border: 2px solid var(--blue-light); border-radius: 8px;
+  padding: 20px; display: flex; justify-content: center; align-items: center;
+  min-height: 240px;
+}
+.stroke-stage .demo-big {
+  font-size: 150px; line-height: 1; color: var(--ink);
+}
+.stroke-stage .demo-big.print { font-family: "Kalam", "Segoe Print", cursive; }
+.stroke-stage .demo-big.cursive { font-family: "Caveat", cursive; }
+.stroke-stage .stroke-note { color: #889; font-size: 0.85em; margin-top: 6px; }
+#strokeResult { margin-top: 10px; font-weight: 600; color: var(--green); min-height: 1.4em; }
+
+/* ===== FOOTER ===== */
+.ws-footer {
+  margin-top: 30px; padding-top: 12px; border-top: 1px solid #eee;
+  font-size: 0.75em; color: #aaa; text-align: center;
+}
+.footer-links { margin-top: 6px; display: flex; justify-content: center; gap: 16px; font-size: 0.8em; }
+.footer-links a { color: var(--blue); text-decoration: none; }
+.audio-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: rgba(20, 40, 60, 0.92); color: white; padding: 8px 18px;
+  border-radius: 20px; font-size: 0.85em; z-index: 200;
+  display: none; max-width: 90%;
+}
+.audio-toast.show { display: block; }
+.back-to-top {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--blue); color: white; border: none; font-size: 1.2em;
+  cursor: pointer; box-shadow: 0 4px 14px rgba(15,60,100,0.3);
+  display: none; z-index: 90;
+}
+.back-to-top.show { display: block; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.35em; }
+  .input-section { padding: 14px; }
+  .options { padding: 12px; }
+  .opt-grid { grid-template-columns: 1fr; }
+  .letter-info { flex-direction: column; }
+  #worksheet { padding: 14px; margin: 8px; }
+}
+
+/* ===== PRINT ===== */
+@media print {
+  @page { margin: 12mm; size: A4; }
+  body { background: white !important; }
+  .screen-only, .hero, .print-bar, .modal-overlay, .audio-toast,
+  .no-print, .back-to-top, .footer-links { display: none !important; }
+  #worksheet {
+    box-shadow: none; margin: 0; padding: 0; max-width: none; background: white;
+    --cell-practice: var(--print-cell-practice, 2.2cm) !important;
+    --cell-font: var(--print-cell-font, calc(2.2cm * 0.64)) !important;
+    --glyph-bottom: var(--print-glyph-bottom, 15%) !important;
+    --guide-line: #8FB4D4 !important;
+    --guide-tint: #C7DEEF !important;
+    --blue-grid: #8FAFC9 !important;
+  }
+  .letter-card { break-inside: avoid; page-break-inside: avoid; }
+  .word-block { break-inside: avoid; page-break-inside: avoid; }
+  .practice-row[data-perrow] .practice-cell {
+    flex: 0 0 var(--cell-practice) !important;
+    width: var(--cell-practice) !important;
+    height: var(--cell-practice) !important;
+  }
+  .cell-guides line { stroke-width: 1.6; }
+}
+</style>
+</head>
+<body>
+
+<div class="hero no-print">
+  <h1>✏️ English Word Practice</h1>
+  <p>Type English → handwriting worksheet<br>（Print &amp; Cursive · Uppercase &amp; Lowercase · Words &amp; Sentences · A4）</p>
+</div>
+
+<!-- INPUT -->
+<div class="input-section screen-only">
+  <label for="inputText">✏️ Type English words or a sentence</label>
+  <textarea id="inputText" placeholder="e.g. The quick brown fox jumps over the lazy dog.">The quick brown fox jumps over the lazy dog.</textarea>
+  <details class="sample-collapse">
+    <summary>🎲 Samples</summary>
+    <div class="sample-list">
+      <button onclick="setInput('abcdefghijklmnopqrstuvwxyz')">a–z</button>
+      <button onclick="setInput('ABCDEFGHIJKLMNOPQRSTUVWXYZ')">A–Z</button>
+      <button onclick="setInput('hello world')">hello world</button>
+      <button onclick="setInput('The quick brown fox jumps over the lazy dog.')">Full alphabet sentence</button>
+      <button onclick="setInput('Happy birthday! I love you.')">Phrases</button>
+      <button onclick="setInput('My name is Alex. I am eight years old.')">Sentences</button>
+    </div>
+  </details>
+  <div class="actions">
+    <button class="btn-primary" onclick="generate()">📝 Generate Worksheet</button>
+    <button class="btn-ghost" onclick="toggleOptions()">⚙️ Options</button>
+    <button class="btn-ghost" onclick="readAllText('us')">🔊 Read All</button>
+  </div>
+</div>
+
+<!-- OPTIONS -->
+<div class="options" id="optionsPanel">
+  <div class="opt-section">
+    <h3>📐 Layout</h3>
+    <div class="opt-grid">
+      <div class="opt-group">
+        <label>Letter practice cells</label>
+        <input type="number" id="optPractice" value="4" min="0" max="12">
+      </div>
+      <div class="opt-group">
+        <label>Guide style</label>
+        <select id="optGuideStyle">
+          <option value="standard" selected>Standard (4-line)</option>
+          <option value="dashed">Dashed guides</option>
+          <option value="blank">Blank</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <label>Screen cell size</label>
+        <select id="optSize">
+          <option value="xs">Extra small (56px)</option>
+          <option value="sm">Small (72px)</option>
+          <option value="md" selected>Medium (96px)</option>
+          <option value="lg">Large (128px)</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <label>Print cell size</label>
+        <select id="optPrintSize">
+          <option value="auto">Follow screen</option>
+          <option value="1.5cm">Small 1.5cm</option>
+          <option value="1.8cm">Medium 1.8cm</option>
+          <option value="2.2cm" selected>Large 2.2cm (standard)</option>
+          <option value="2.6cm">Extra large 2.6cm</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <label>Cells per row</label>
+        <select id="optPerRow">
+          <option value="auto" selected>Auto</option>
+          <option value="4">4</option>
+          <option value="6">6</option>
+          <option value="8">8</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt-section">
+    <h3>📝 Content</h3>
+    <div class="opt-grid">
+      <div class="opt-group">
+        <label>Handwriting style</label>
+        <select id="optStyle">
+          <option value="print" selected>Print (正寫)</option>
+          <option value="cursive">Cursive (草寫)</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <label>Letter case</label>
+        <select id="optCase">
+          <option value="both" selected>Both Aa</option>
+          <option value="upper">Uppercase A</option>
+          <option value="lower">Lowercase a</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <div class="toggle-row"><input type="checkbox" id="optWords" checked><label for="optWords">Word practice</label></div>
+      </div>
+      <div class="opt-group">
+        <div class="toggle-row"><input type="checkbox" id="optSentences" checked><label for="optSentences">Sentence practice</label></div>
+      </div>
+      <div class="opt-group">
+        <div class="toggle-row"><input type="checkbox" id="optGuide" checked><label for="optGuide">Light tracing guide</label></div>
+      </div>
+      <div class="opt-group">
+        <div class="toggle-row"><input type="checkbox" id="optShowHeader" checked><label for="optShowHeader">Show title &amp; info</label></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="opt-section">
+    <h3>⚙️ Advanced</h3>
+    <details class="advance-collapse">
+      <summary>Advanced (title · name · date · accent · dedupe)</summary>
+      <div class="opt-grid collapse-wrap">
+        <div class="opt-group">
+          <label>Worksheet title</label>
+          <input type="text" id="optTitle" value="English Handwriting Practice" placeholder="Worksheet title">
+        </div>
+        <div class="opt-group">
+          <label>Name</label>
+          <input type="text" id="optName" value="" placeholder="Student name">
+        </div>
+        <div class="opt-group">
+          <label>Accent</label>
+          <select id="optAccent">
+            <option value="us" selected>US English</option>
+            <option value="uk">UK English</option>
+          </select>
+        </div>
+        <div class="opt-group">
+          <div class="toggle-row"><input type="checkbox" id="optDedup" checked><label for="optDedup">Deduplicate letters</label></div>
+        </div>
+      </div>
+    </details>
+  </div>
+</div>
+
+<!-- PRINT BAR -->
+<div class="print-bar no-print" id="printBar">
+  <button class="btn-primary" onclick="printWorksheet()">🖨️ Print / PDF</button>
+  <div class="bar-sep"></div>
+  <button class="btn-ghost" onclick="toggleQuizMode()" id="btnQuizMode">✍️ Practice Mode</button>
+  <span style="font-size:0.8em;color:#889;" id="printHint"></span>
+</div>
+
+<!-- WORKSHEET -->
+<div id="worksheet">
+  <div class="ws-header">
+    <div class="ws-title" id="wsTitle">English Handwriting Practice</div>
+    <div class="ws-meta" id="wsMeta"></div>
+  </div>
+  <div id="wsContent"></div>
+  <div class="ws-footer">
+    <div id="wsFooter">Fonts: Kalam &amp; Caveat (OFL) · Made with ✏️</div>
+    <div class="footer-links">
+      <a href="https://ko-fi.com/forumdata" target="_blank" rel="noopener">☕ Buy me a coffee</a>
+      <a href="mailto:forumdata@gmail.com">✉️ Contact</a>
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-overlay" id="strokeModal">
+  <div class="modal-box">
+    <h3 id="strokeModalTitle">Write</h3>
+    <div class="stroke-stage">
+      <div>
+        <div class="demo-big print" id="strokeDemoPrint"></div>
+        <div class="demo-big cursive" id="strokeDemoCursive" style="display:none;"></div>
+        <div class="stroke-note" id="strokeNote"></div>
+      </div>
+    </div>
+    <div id="strokeResult"></div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="strokeReplay()">↻ Replay</button>
+      <button class="btn-ghost" onclick="closeModal('strokeModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="audio-toast" id="audioToast"></div>
+<button class="back-to-top no-print" id="backToTop" title="Back to top">↑</button>
+
+<script>
+// ===== STATE =====
+let currentLetters = [];
+let currentWords = [];
+let currentSentences = [];
+let currentOptions = {};
+let quizMode = false;
+let strokeTimer = null;
+const SIZE_PX = { xs: 56, sm: 72, md: 96, lg: 128 };
+const STYLE_FONT = { print: 'Kalam', cursive: 'Caveat' };
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('optDate') && (document.getElementById('optDate').value = todayStr());
+  try {
+    const saved = JSON.parse(localStorage.getItem('eng-ws-settings'));
+    if (saved) {
+      if (saved.practice != null) document.getElementById('optPractice').value = saved.practice;
+      if (saved.size) document.getElementById('optSize').value = saved.size;
+      if (saved.guideStyle) document.getElementById('optGuideStyle').value = saved.guideStyle;
+      if (saved.perRow) document.getElementById('optPerRow').value = saved.perRow;
+      if (saved.printSize) {
+        const v = saved.printSize;
+        if (['auto','1.5cm','1.8cm','2.2cm','2.6cm'].includes(v)) document.getElementById('optPrintSize').value = v;
+      }
+      if (saved.style) document.getElementById('optStyle').value = saved.style;
+      if (saved.case_) document.getElementById('optCase').value = saved.case_;
+      if (saved.accent) document.getElementById('optAccent').value = saved.accent;
+      document.getElementById('optWords').checked = saved.words !== false;
+      document.getElementById('optSentences').checked = saved.sentences !== false;
+      document.getElementById('optGuide').checked = saved.guide !== false;
+      document.getElementById('optShowHeader').checked = saved.showHeader !== false;
+      document.getElementById('optDedup').checked = saved.dedup !== false;
+      if (saved.title) document.getElementById('optTitle').value = saved.title;
+      if (saved.name) document.getElementById('optName').value = saved.name;
+    }
+  } catch(e) {}
+  generate();
+});
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function setInput(text) { document.getElementById('inputText').value = text; }
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+function toggleOptions() {
+  const p = document.getElementById('optionsPanel');
+  p.classList.toggle('show');
+}
+function showToast(msg) {
+  const t = document.getElementById('audioToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ===== AUDIO =====
+const ACCENTS = {
+  us: { lang: 'en-US', label: 'US' },
+  uk: { lang: 'en-GB', label: 'UK' }
+};
+let _voicesCache = [];
+function refreshVoiceCache() {
+  if ('speechSynthesis' in window) _voicesCache = window.speechSynthesis.getVoices();
+}
+function normLang(l) {
+  if (!l) return '';
+  return String(l).toLowerCase().replace(/_/g, '-').split('-').slice(0, 2).join('-');
+}
+function pickVoice(tags) {
+  const vs = _voicesCache;
+  if (!vs || !vs.length) return null;
+  const norm = x => normLang(x.lang);
+  for (const t of tags) {
+    const exact = vs.find(v => norm(v) === t);
+    if (exact) return exact;
+  }
+  for (const t of tags) {
+    const prefix = vs.find(v => norm(v).startsWith(t + '-') || norm(v).startsWith(t.split('-')[0] + '-'));
+    if (prefix) return prefix;
+  }
+  const en = vs.find(v => norm(v).startsWith('en'));
+  return en || vs[0];
+}
+function doSpeak(text, accent) {
+  if (!('speechSynthesis' in window)) return;
+  const cfg = ACCENTS[accent] || ACCENTS.us;
+  const voice = pickVoice([cfg.lang]);
+  const u = new SpeechSynthesisUtterance(text);
+  if (voice) u.voice = voice;
+  u.lang = cfg.lang;
+  u.rate = 0.85;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+function speak(text, accent) {
+  if (_voicesCache.length === 0) refreshVoiceCache();
+  if (_voicesCache.length === 0) {
+    // voices may load async
+    let tries = 0;
+    const poll = () => {
+      refreshVoiceCache();
+      if (_voicesCache.length > 0 || tries > 30) { doSpeak(text, accent); return; }
+      tries++; setTimeout(poll, 100);
+    };
+    poll();
+    return;
+  }
+  doSpeak(text, accent);
+}
+function readAllText(accent) {
+  const acc = document.getElementById('optAccent').value || 'us';
+  const parts = [];
+  if (currentWords.length) parts.push(currentWords.join(' '));
+  if (currentSentences.length) parts.push(currentSentences.join(' '));
+  if (parts.length) speak(parts.join('. '), acc);
+  else if (currentLetters.length) speak(currentLetters.join(', '), acc);
+}
+
+// ===== PARSE =====
+function parseLetters(text) {
+  return (text.match(/[A-Za-z]/g) || []);
+}
+function parseWords(text) {
+  return (text.match(/[A-Za-z']+/g) || []).map(w => w.toLowerCase());
+}
+function parseSentences(text) {
+  // split on sentence-ending punctuation
+  const parts = text.split(/(?<=[.!?。！？])\s+/).map(s => s.trim()).filter(Boolean);
+  return parts.length ? parts : (text.trim() ? [text.trim()] : []);
+}
+
+// ===== GENERATE =====
+function generate() {
+  // save settings
+  try {
+    localStorage.setItem('eng-ws-settings', JSON.stringify({
+      practice: document.getElementById('optPractice').value,
+      size: document.getElementById('optSize').value,
+      guideStyle: document.getElementById('optGuideStyle').value,
+      perRow: document.getElementById('optPerRow').value,
+      printSize: document.getElementById('optPrintSize').value,
+      style: document.getElementById('optStyle').value,
+      case_: document.getElementById('optCase').value,
+      accent: document.getElementById('optAccent').value,
+      words: document.getElementById('optWords').checked,
+      sentences: document.getElementById('optSentences').checked,
+      guide: document.getElementById('optGuide').checked,
+      showHeader: document.getElementById('optShowHeader').checked,
+      dedup: document.getElementById('optDedup').checked,
+      title: document.getElementById('optTitle').value,
+      name: document.getElementById('optName').value
+    }));
+  } catch(e) {}
+
+  const raw = document.getElementById('inputText').value.trim();
+  if (!raw) { showToast('Please type some English text'); return; }
+
+  let letters = parseLetters(raw);
+  if (!letters.length) { showToast('No letters found — type A–Z'); return; }
+  const dedup = document.getElementById('optDedup').checked;
+  if (dedup) letters = [...new Set(letters.map(l => l.toLowerCase()))];
+  else letters = letters.map(l => l.toLowerCase());
+  // keep unique but preserve order, case handled at render
+  currentLetters = dedup ? letters : letters;
+
+  const wordsOpt = document.getElementById('optWords').checked;
+  const sentOpt = document.getElementById('optSentences').checked;
+  currentWords = wordsOpt ? [...new Set(parseWords(raw))] : [];
+  currentSentences = sentOpt ? parseSentences(raw) : [];
+
+  quizMode = false;
+  currentOptions = {
+    practice: parseInt(document.getElementById('optPractice').value) || 4,
+    size: document.getElementById('optSize').value || 'md',
+    guideStyle: document.getElementById('optGuideStyle').value || 'standard',
+    perRow: document.getElementById('optPerRow').value || 'auto',
+    printSize: document.getElementById('optPrintSize').value || 'auto',
+    style: document.getElementById('optStyle').value || 'print',
+    case_: document.getElementById('optCase').value || 'both',
+    guide: document.getElementById('optGuide').checked,
+    showHeader: document.getElementById('optShowHeader').checked,
+    title: document.getElementById('optTitle').value || 'English Handwriting Practice',
+    name: document.getElementById('optName').value
+  };
+
+  renderWorksheet();
+  document.getElementById('worksheet').classList.add('show');
+  document.getElementById('printBar').classList.add('show');
+  document.getElementById('printHint').textContent =
+    currentLetters.length + ' letter' + (currentLetters.length===1?'':'s') +
+    (currentWords.length ? ' · ' + currentWords.length + ' word' + (currentWords.length===1?'':'s') : '') +
+    (currentSentences.length ? ' · ' + currentSentences.length + ' sentence' + (currentSentences.length===1?'':'s') : '');
+  document.getElementById('worksheet').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===== RENDER =====
+function guideSvg(mode) {
+  // 4-line handwriting grid: top, dashed midline, baseline, bottom
+  // viewBox 0-100: top 5, mid 38, base 65, bottom 96
+  const cls = mode === 'word' ? 'word' : 'cell';
+  return `<svg class="cell-guides" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">` +
+    `<line class="g-top" x1="2" y1="5" x2="98" y2="5"/>` +
+    `<line class="g-midline" x1="2" y1="38" x2="98" y2="38"/>` +
+    `<line class="g-baseline" x1="2" y1="65" x2="98" y2="65"/>` +
+    `<line class="g-bottom" x1="2" y1="96" x2="98" y2="96"/>` +
+    `</svg>`;
+}
+
+function renderWorksheet() {
+  const o = currentOptions;
+  const ws = document.getElementById('worksheet');
+  const content = document.getElementById('wsContent');
+
+  // screen sizing
+  const size = SIZE_PX[o.size] || 96;
+  const fontMap = { [SIZE_PX.xs]: '36px', [SIZE_PX.sm]: '46px', [SIZE_PX.md]: '60px', [SIZE_PX.lg]: '76px' };
+  const fontSize = fontMap[size] || '60px';
+  ws.style.setProperty('--cell-practice', size + 'px');
+  ws.style.setProperty('--cell-font', fontSize);
+  ws.style.setProperty('--cell-guide-font', fontSize);
+
+  // print sizing (cm)
+  let ps;
+  if (o.printSize && o.printSize !== 'auto') {
+    ps = o.printSize;
+  } else {
+    const cm = (size / 96 * 2.54);
+    ps = Math.min(Math.max(cm, 1.5), 2.6).toFixed(2) + 'cm';
+  }
+  ws.style.setProperty('--print-cell-practice', ps);
+  ws.style.setProperty('--print-cell-font', `calc(${ps} * 0.64)`);
+  ws.style.setProperty('--print-glyph-bottom', '15%');
+
+  // guide class
+  ws.classList.remove('guide-dashed', 'guide-blank');
+  if (o.guideStyle === 'dashed') ws.classList.add('guide-dashed');
+  else if (o.guideStyle === 'blank') ws.classList.add('guide-blank');
+
+  // header
+  document.getElementById('wsTitle').textContent = o.title;
+  const wsHeader = document.querySelector('#worksheet .ws-header');
+  if (wsHeader) wsHeader.style.display = o.showHeader ? '' : 'none';
+  let metaHtml = '';
+  if (o.name) metaHtml += `<span>Name: ${esc(o.name)}</span>`;
+  metaHtml += `<span>Date: ${todayStr()}</span>`;
+  document.getElementById('wsMeta').innerHTML = metaHtml;
+
+  const usePrint = o.style === 'print' || o.style === 'both';
+  const useCursive = o.style === 'cursive' || o.style === 'both';
+  const showUpper = o.case_ === 'both' || o.case_ === 'upper';
+  const showLower = o.case_ === 'both' || o.case_ === 'lower';
+
+  let html = '';
+
+  // ===== LETTER SECTION =====
+  if (currentLetters.length) {
+    html += `<div class="ws-section-title">Letters <span class="en-hint">single letter practice</span></div>`;
+    const unique = [...new Set(currentLetters)];
+    unique.forEach(ch => {
+      const variants = [];
+      if (showUpper) variants.push({ text: ch.toUpperCase(), label: 'Uppercase' });
+      if (showLower) variants.push({ text: ch, label: 'Lowercase' });
+      const styles = [];
+      if (usePrint) styles.push('print');
+      if (useCursive) styles.push('cursive');
+
+      html += `<div class="letter-card" data-char="${esc(ch)}">`;
+      html += `<div class="letter-info">`;
+      html += `<div class="letter-demo">`;
+      // demo glyphs (both styles stacked)
+      variants.forEach(v => {
+        styles.forEach(st => {
+          html += `<div class="hw-cell" style="margin-bottom:6px;">${guideSvg('cell')}` +
+            `<div class="glyph-layer"><span class="demo-glyph ${st}" data-ch="${esc(v.text)}" data-font="${st}">${esc(v.text)}</span></div></div>`;
+        });
+      });
+      html += `</div>`;
+      html += `<div class="letter-details">`;
+      html += `<div class="letter-name">${esc(ch.toUpperCase())} <small>letter ${esc(ch)}</small></div>`;
+      html += `<div class="letter-desc">${phonetic(ch)}</div>`;
+      html += `<div class="letter-actions">`;
+      html += `<button class="btn-ghost" onclick="speak('${esc(ch)}','${document.getElementById('optAccent').value}')">🔊 Letter</button>`;
+      html += `<button class="btn-ghost" onclick="openStroke('${esc(ch)}')">✍️ Show</button>`;
+      html += `</div></div></div>`;
+
+      // practice cells — per case-variant × per style rows (both modes = 2×2 rows)
+      if (o.practice > 0) {
+        variants.forEach(v => {
+          styles.forEach(st => {
+            const perRowAttr = o.perRow !== 'auto' ? ` data-perrow="${o.perRow}" style="--n:${o.perRow}"` : '';
+            html += `<div class="practice-row"${perRowAttr}>`;
+            for (let r = 0; r < o.practice; r++) {
+              const guideHtml = o.guide ? `<span class="guide-glyph ${st}" data-ch="${esc(v.text)}" data-font="${st}">${esc(v.text)}</span>` : '';
+              html += `<div class="hw-cell practice-cell">${guideSvg('cell')}` +
+                `<div class="glyph-layer">${guideHtml}</div></div>`;
+            }
+            html += `</div>`;
+          });
+        });
+      }
+      html += `</div>`;
+    });
+  }
+
+  // ===== WORD SECTION =====
+  if (currentWords.length) {
+    html += `<div class="ws-section-title">Words <span class="en-hint">word-level practice</span></div>`;
+    currentWords.forEach(w => {
+      html += `<div class="word-block" data-word="${esc(w)}">`;
+      html += `<div class="word-info">`;
+      html += `<span class="word-name">${esc(w)} <small>${w.length} letters</small></span>`;
+      html += ` <button class="btn-ghost" onclick="speak('${esc(w)}','${document.getElementById('optAccent').value}')">🔊</button>`;
+      html += `</div>`;
+      // demo line
+      stylesLoop(usePrint, useCursive, st => {
+        html += `<div class="word-line">${guideSvg('word')}` +
+          `<div class="glyph-layer"><span class="demo-glyph ${st}" data-ch="${esc(w)}" data-font="${st}" data-word="1">${esc(w)}</span></div></div>`;
+      });
+      // practice lines (2)
+      for (let r = 0; r < 2; r++) {
+        const guideHtml = o.guide ? `<span class="guide-glyph ${usePrint ? 'print' : 'cursive'}" data-ch="${esc(w)}" data-font="${usePrint ? 'print' : 'cursive'}" data-word="1">${esc(w)}</span>` : '';
+        html += `<div class="word-line">${guideSvg('word')}` +
+          `<div class="glyph-layer">${guideHtml}</div></div>`;
+      }
+      html += `</div>`;
+    });
+  }
+
+  // ===== SENTENCE SECTION =====
+  if (currentSentences.length) {
+    html += `<div class="ws-section-title">Sentences <span class="en-hint">sentence practice</span></div>`;
+    currentSentences.forEach(s => {
+      html += `<div class="word-block" data-sentence="${esc(s)}">`;
+      html += `<div class="word-info">`;
+      html += `<span class="word-name">${esc(s)}</span>`;
+      html += ` <button class="btn-ghost" onclick="speak('${esc(s).replace(/'/g,"\\'")}','${document.getElementById('optAccent').value}')">🔊</button>`;
+      html += `</div>`;
+      stylesLoop(usePrint, useCursive, st => {
+        html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg('word')}` +
+          `<div class="glyph-layer" style="bottom:calc(var(--glyph-bottom) * 0.5);"><span class="demo-glyph ${st}" data-ch="${esc(s)}" data-font="${st}" data-word="1" style="font-size:calc(var(--cell-font) * 0.5);">${esc(s)}</span></div></div>`;
+      });
+      for (let r = 0; r < 1; r++) {
+        const guideHtml = o.guide ? `<span class="guide-glyph ${usePrint ? 'print' : 'cursive'}" data-ch="${esc(s)}" data-font="${usePrint ? 'print' : 'cursive'}" data-word="1" style="font-size:calc(var(--cell-font) * 0.5);">${esc(s)}</span>` : '';
+        html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg('word')}` +
+          `<div class="glyph-layer" style="bottom:calc(var(--glyph-bottom) * 0.5);">${guideHtml}</div></div>`;
+      }
+      html += `</div>`;
+    });
+  }
+
+  if (!html) html = '<p style="text-align:center;color:#889;padding:30px;">Nothing to practice — type some English.</p>';
+  content.innerHTML = html;
+}
+
+function stylesLoop(usePrint, useCursive, fn) {
+  if (usePrint) fn('print');
+  if (useCursive) fn('cursive');
+}
+
+function phonetic(ch) {
+  const lower = ch.toLowerCase();
+  const names = {
+    a: 'ay', b: 'bee', c: 'see', d: 'dee', e: 'ee', f: 'eff', g: 'gee',
+    h: 'aitch', i: 'eye', j: 'jay', k: 'kay', l: 'el', m: 'em', n: 'en',
+    o: 'oh', p: 'pee', q: 'cue', r: 'ar', s: 'ess', t: 'tee', u: 'you',
+    v: 'vee', w: 'double-u', x: 'ex', y: 'why', z: 'zed'
+  };
+  return 'Letter name: ' + (names[lower] || lower);
+}
+
+// ===== STROKE MODAL =====
+function openStroke(ch) {
+  const usePrint = currentOptions.style === 'print' || currentOptions.style === 'both';
+  const useCursive = currentOptions.style === 'cursive' || currentOptions.style === 'both';
+  document.getElementById('strokeModalTitle').textContent = `Letter: ${ch.toUpperCase()} (${ch})`;
+  document.getElementById('strokeDemoPrint').style.display = usePrint ? '' : 'none';
+  document.getElementById('strokeDemoCursive').style.display = useCursive ? '' : 'none';
+  document.getElementById('strokeDemoPrint').textContent = usePrint ? ch : '';
+  document.getElementById('strokeDemoCursive').textContent = useCursive ? ch : '';
+  document.getElementById('strokeNote').textContent = 'Watch the shape — then practice writing it in the grids below.';
+  document.getElementById('strokeResult').textContent = '';
+  openModal('strokeModal');
+  clearTimeout(strokeTimer);
+  // subtle pulse animation via class toggle
+  document.getElementById('strokeDemoPrint').style.transition = 'transform 0.3s';
+  document.getElementById('strokeDemoCursive').style.transition = 'transform 0.3s';
+  let pulse = 1;
+  strokeTimer = setInterval(() => {
+    pulse = pulse === 1 ? 1.06 : 1;
+    const t = usePrint ? document.getElementById('strokeDemoPrint') : document.getElementById('strokeDemoCursive');
+    t.style.transform = `scale(${pulse})`;
+  }, 600);
+}
+function strokeReplay() {
+  clearTimeout(strokeTimer);
+  const ch = (document.getElementById('strokeModalTitle').textContent.match(/\((\w)\)/) || [,''])[1];
+  if (ch) openStroke(ch);
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('show');
+  if (id === 'strokeModal') { clearTimeout(strokeTimer); document.body.style.overflow = ''; }
+  document.body.style.overflow = '';
+}
+function openModal(id) {
+  document.getElementById(id).classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.show').forEach(el => closeModal(el.id));
+});
+
+// ===== QUIZ MODE =====
+function toggleQuizMode() {
+  quizMode = !quizMode;
+  const btn = document.getElementById('btnQuizMode');
+  btn.classList.toggle('active', quizMode);
+  btn.textContent = quizMode ? '📖 Practice Mode' : '✍️ Dictation Mode';
+  document.querySelectorAll('#worksheet .guide-glyph').forEach(g => {
+    g.style.display = quizMode ? 'none' : '';
+  });
+  document.querySelectorAll('#worksheet .demo-glyph').forEach(g => {
+    g.style.display = quizMode ? 'none' : '';
+  });
+  if (typeof currentOptions === 'object') currentOptions.quizMode = quizMode;
+}
+
+// ===== PRINT =====
+function printWorksheet() { window.print(); }
+
+// ===== OPTICAL NORMALIZATION (optional sizing consistency) =====
+// English letters are simpler than CJK; skip ink normalization but add font weights
+window.addEventListener('load', () => {
+  // ensure fonts loaded for print
+  try { document.fonts && document.fonts.load('16px Kalam'); document.fonts.load('16px Caveat'); } catch(e) {}
+});
+
+// ===== BACK TO TOP =====
+window.addEventListener('scroll', () => {
+  const b = document.getElementById('backToTop');
+  if (b) b.classList.toggle('show', window.scrollY > 300);
+});
+document.getElementById('backToTop').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+// ===== VOICES =====
+if ('speechSynthesis' in window) {
+  refreshVoiceCache();
+  window.speechSynthesis.addEventListener('voiceschanged', refreshVoiceCache);
+}
+</script>
+</body>
+</html>
