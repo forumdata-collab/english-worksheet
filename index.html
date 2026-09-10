@@ -22,7 +22,6 @@
   --radius: 10px;
   --cell-practice: 96px;
   --cell-font: 62px;
-  --cell-guide-font: 62px;
   --glyph-bottom: 15%;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -198,14 +197,6 @@ body {
 }
 .letter-info { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 8px; }
 .letter-demo { flex-shrink: 0; }
-.letter-glyph {
-  display: inline-block;
-  font-size: var(--cell-font);
-  line-height: 1;
-  position: relative;
-}
-.letter-glyph.print { font-family: "Kalam", "Segoe Print", cursive; font-weight: 400; }
-.letter-glyph.cursive { font-family: "Playwrite", cursive; font-weight: 400; }
 .letter-details { flex: 1; min-width: 0; }
 .letter-details .letter-name { font-size: 1.1em; font-weight: 700; }
 .letter-details .letter-name small { color: #8aa; font-weight: 500; font-size: 0.7em; }
@@ -237,8 +228,8 @@ body {
   font-size: var(--cell-font, 62px);
   transform-origin: center;
 }
-.hw-cell .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; }
-.hw-cell .glyph-layer span.cursive { font-family: "Playwrite", cursive; }
+.hw-cell .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; margin-bottom: calc(var(--cell-font) * -0.034); }
+.hw-cell .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-font) * 0.052); }
 .hw-cell .glyph-layer .guide-glyph { color: var(--guide-tint); }
 .hw-cell .glyph-layer .demo-glyph { color: var(--ink); }
 .cell-guides {
@@ -277,7 +268,8 @@ body {
 .word-line .glyph-layer {
   position: absolute; inset: 0; display: flex; align-items: flex-end;
   justify-content: center;
-  bottom: calc(var(--glyph-bottom, 15%) * 0.75);
+  /* bottom set per-font via span margin; layer itself sits at 0 */
+  bottom: 0;
   line-height: 1; z-index: 3;
 }
 .word-line .glyph-layer span {
@@ -285,8 +277,15 @@ body {
   font-size: calc(var(--cell-font, 62px) * 0.75);
   white-space: nowrap;
 }
-.word-line .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; }
-.word-line .glyph-layer span.cursive { font-family: "Playwrite", cursive; }
+.word-line .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.75 * 0.126); }
+.word-line .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.75 * 0.176); }
+/* sentence lines are 0.5× scale — margins scale with cell, font with 0.5 */
+.sentence-block .glyph-layer span.print,
+.sentence-block .glyph-layer span.cursive {
+  font-size: calc(var(--cell-font, 62px) * 0.5);
+}
+.sentence-block .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.5 * 0.126); }
+.sentence-block .glyph-layer span.cursive { font-family: "Playwrite", cursive; margin-bottom: calc(var(--cell-practice, 96px) * 0.5 * 0.176); }
 .word-line .glyph-layer .guide-glyph { color: var(--guide-tint); }
 .word-line .glyph-layer .demo-glyph { color: var(--ink); }
 .word-line .cell-guides line.g-top { display: none; }
@@ -317,19 +316,7 @@ body {
 .stroke-box .sb-label small { color: #8aa; font-weight: 500; margin-left: 2px; }
 .stroke-box svg { width: 100%; height: auto; background: #fff; border-radius: 4px; }
 .stroke-box .sb-note { font-size: 0.72em; color: #99a; margin-top: 3px; min-height: 1.2em; }
-.stroke-box.active-box { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-light); }
 .stroke-note { color: #889; font-size: 0.85em; margin-top: 8px; }
-.stroke-stage {
-  background: #fff; border: 2px solid var(--blue-light); border-radius: 8px;
-  padding: 20px; display: flex; justify-content: center; align-items: center;
-  min-height: 240px;
-}
-.stroke-stage .demo-big {
-  font-size: 150px; line-height: 1; color: var(--ink);
-}
-.stroke-stage .demo-big.print { font-family: "Kalam", "Segoe Print", cursive; }
-.stroke-stage .demo-big.cursive { font-family: "Playwrite", cursive; }
-.stroke-stage .stroke-note { color: #889; font-size: 0.85em; margin-top: 6px; }
 #strokeResult { margin-top: 10px; font-weight: 600; color: var(--green); min-height: 1.4em; }
 
 /* ===== FOOTER ===== */
@@ -599,13 +586,10 @@ let currentWords = [];
 let currentSentences = [];
 let currentOptions = {};
 let quizMode = false;
-// stroke modal state (init'd at top of stroke section)
 const SIZE_PX = { xs: 56, sm: 72, md: 96, lg: 128 };
-const STYLE_FONT = { print: 'Kalam', cursive: 'Playwrite' };
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('optDate') && (document.getElementById('optDate').value = todayStr());
   try {
     const saved = JSON.parse(localStorage.getItem('eng-ws-settings'));
     if (saved) {
@@ -635,18 +619,18 @@ document.addEventListener('DOMContentLoaded', () => {
   // Eager font warm-up — same lesson as chineseword: swap+preload so the
   // handwriting fonts render immediately instead of falling back to system
   // fonts on first paint (esp. before print/PDF).
-  if (document.fonts && document.fonts.load) {
-    try {
-      document.fonts.load('400 16px Kalam');
-      document.fonts.load('700 16px Kalam');
-      document.fonts.load('400 16px Playwrite');
-      document.fonts.load('700 16px Playwrite');
-      // wait for the real glyphs, then re-render so baseline alignment uses
-      // the actual font metrics (fallback → webfont changes the ink box)
-      document.fonts.ready.then(() => { setTimeout(() => { if (document.querySelector('.demo-glyph')) generate(); }, 30); });
-    } catch(e) {}
-  }
+  preloadFonts(['Kalam', 'Playwrite']);
+  // wait for the real glyphs, then re-render so baseline alignment uses
+  // the actual font metrics (fallback → webfont changes the ink box)
+  document.fonts.ready.then(() => { setTimeout(() => { if (document.querySelector('.demo-glyph')) generate(); }, 30); });
 });
+
+// Shared font preloader — single source for warm-up/print/bootstrap sites.
+function preloadFonts(families, weights) {
+  if (!document.fonts || !document.fonts.load) return Promise.resolve();
+  const w = weights || ['400', '700'];
+  return Promise.all(w.flatMap(fw => families.map(fam => document.fonts.load(fw + ' 16px ' + fam)))).catch(() => {});
+}
 
 function syncQuickBtns() {
   const st = document.getElementById('optStyle').value;
@@ -662,12 +646,12 @@ function todayStr() {
 function setInput(text) { document.getElementById('inputText').value = text; }
 function setStyle(s) {
   document.getElementById('optStyle').value = s;
-  document.querySelectorAll('.qs-btn[data-style]').forEach(b => b.classList.toggle('active', b.dataset.style === s));
+  syncQuickBtns();
   generate();
 }
 function setCase(c) {
   document.getElementById('optCase').value = c;
-  document.querySelectorAll('.qs-btn[data-case]').forEach(b => b.classList.toggle('active', b.dataset.case === c));
+  syncQuickBtns();
   generate();
 }
 function esc(s) {
@@ -742,7 +726,9 @@ function speak(text, accent) {
   doSpeak(text, accent);
 }
 function readAllText(accent) {
-  const acc = document.getElementById('optAccent').value || 'us';
+  // honor the passed accent; fall back to the select value (fix: param was
+  // silently ignored, so onclick="readAllText('us')" always read the select)
+  const acc = (accent && ACCENTS[accent]) ? accent : (document.getElementById('optAccent').value || 'us');
   const parts = [];
   if (currentWords.length) parts.push(currentWords.join(' '));
   if (currentSentences.length) parts.push(currentSentences.join(' '));
@@ -795,7 +781,7 @@ function generate() {
   if (dedup) letters = [...new Set(letters.map(l => l.toLowerCase()))];
   else letters = letters.map(l => l.toLowerCase());
   // keep unique but preserve order, case handled at render
-  currentLetters = dedup ? letters : letters;
+  currentLetters = letters;
 
   const wordsOpt = document.getElementById('optWords').checked;
   const sentOpt = document.getElementById('optSentences').checked;
@@ -828,10 +814,9 @@ function generate() {
 }
 
 // ===== RENDER =====
-function guideSvg(mode) {
+function guideSvg() {
   // 4-line handwriting grid: top, dashed midline, baseline, bottom
   // viewBox 0-100: top 5, mid 38, base 65, bottom 96
-  const cls = mode === 'word' ? 'word' : 'cell';
   return `<svg class="cell-guides" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">` +
     `<line class="g-top" x1="2" y1="5" x2="98" y2="5"/>` +
     `<line class="g-midline" x1="2" y1="38" x2="98" y2="38"/>` +
@@ -842,16 +827,16 @@ function guideSvg(mode) {
 
 function renderWorksheet() {
   const o = currentOptions;
+  const accent = document.getElementById('optAccent').value || 'us';
   const ws = document.getElementById('worksheet');
   const content = document.getElementById('wsContent');
 
-  // screen sizing
+  // screen sizing — uniform ratio (0.64) across all sizes so baseline gap
+  // stays constant; per-font CSS margin corrections handle Kalam vs Playwrite
+  // metric differences (see .glyph-layer span.print/.cursive margin-bottom).
   const size = SIZE_PX[o.size] || 96;
-  const fontMap = { [SIZE_PX.xs]: '36px', [SIZE_PX.sm]: '46px', [SIZE_PX.md]: '60px', [SIZE_PX.lg]: '76px' };
-  const fontSize = fontMap[size] || '60px';
   ws.style.setProperty('--cell-practice', size + 'px');
-  ws.style.setProperty('--cell-font', fontSize);
-  ws.style.setProperty('--cell-guide-font', fontSize);
+  ws.style.setProperty('--cell-font', `calc(${size}px * 0.64)`);
 
   // print sizing (cm)
   let ps;
@@ -898,14 +883,14 @@ function renderWorksheet() {
       if (usePrint) styles.push('print');
       if (useCursive) styles.push('cursive');
 
-      html += `<div class="letter-card" data-char="${esc(ch)}">`;
+      html += `<div class="letter-card">`;
       html += `<div class="letter-info">`;
       html += `<div class="letter-demo">`;
       // demo glyphs (both styles stacked)
       variants.forEach(v => {
         styles.forEach(st => {
-          html += `<div class="hw-cell" style="margin-bottom:6px;">${guideSvg('cell')}` +
-            `<div class="glyph-layer"><span class="demo-glyph ${st}" data-ch="${esc(v.text)}" data-font="${st}">${esc(v.text)}</span></div></div>`;
+          html += `<div class="hw-cell" style="margin-bottom:6px;">${guideSvg()}` +
+            `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(v.text)}</span></div></div>`;
         });
       });
       html += `</div>`;
@@ -913,7 +898,7 @@ function renderWorksheet() {
       html += `<div class="letter-name">${esc(ch.toUpperCase())} <small>letter ${esc(ch)}</small></div>`;
       html += `<div class="letter-desc">${phonetic(ch)}</div>`;
       html += `<div class="letter-actions">`;
-      html += `<button class="btn-ghost" onclick="speak('${esc(ch)}','${document.getElementById('optAccent').value}')">🔊 Letter</button>`;
+      html += `<button class="btn-ghost" onclick="speak('${esc(ch)}','${accent}')">🔊 Letter</button>`;
       html += `<button class="btn-ghost" onclick="openStroke('${esc(ch)}')">✍️ Show</button>`;
       html += `</div></div></div>`;
 
@@ -924,8 +909,8 @@ function renderWorksheet() {
             const perRowAttr = o.perRow !== 'auto' ? ` data-perrow="${o.perRow}" style="--n:${o.perRow}"` : '';
             html += `<div class="practice-row"${perRowAttr}>`;
             for (let r = 0; r < o.practice; r++) {
-              const guideHtml = o.guide ? `<span class="guide-glyph ${st}" data-ch="${esc(v.text)}" data-font="${st}">${esc(v.text)}</span>` : '';
-              html += `<div class="hw-cell practice-cell">${guideSvg('cell')}` +
+              const guideHtml = o.guide ? `<span class="guide-glyph ${st}">${esc(v.text)}</span>` : '';
+              html += `<div class="hw-cell practice-cell">${guideSvg()}` +
                 `<div class="glyph-layer">${guideHtml}</div></div>`;
             }
             html += `</div>`;
@@ -940,20 +925,20 @@ function renderWorksheet() {
   if (currentWords.length) {
     html += `<div class="ws-section-title">Words <span class="en-hint">word-level practice</span></div>`;
     currentWords.forEach(w => {
-      html += `<div class="word-block" data-word="${esc(w)}">`;
+      html += `<div class="word-block">`;
       html += `<div class="word-info">`;
       html += `<span class="word-name">${esc(w)} <small>${w.length} letters</small></span>`;
-      html += ` <button class="btn-ghost" onclick="speak('${esc(w)}','${document.getElementById('optAccent').value}')">🔊</button>`;
+      html += ` <button class="btn-ghost" onclick="speak('${esc(w)}','${accent}')">🔊</button>`;
       html += `</div>`;
       // demo line
       stylesLoop(usePrint, useCursive, st => {
-        html += `<div class="word-line">${guideSvg('word')}` +
-          `<div class="glyph-layer"><span class="demo-glyph ${st}" data-ch="${esc(w)}" data-font="${st}" data-word="1">${esc(w)}</span></div></div>`;
+        html += `<div class="word-line">${guideSvg()}` +
+          `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(w)}</span></div></div>`;
       });
       // practice lines (2)
       for (let r = 0; r < 2; r++) {
-        const guideHtml = o.guide ? `<span class="guide-glyph ${usePrint ? 'print' : 'cursive'}" data-ch="${esc(w)}" data-font="${usePrint ? 'print' : 'cursive'}" data-word="1">${esc(w)}</span>` : '';
-        html += `<div class="word-line">${guideSvg('word')}` +
+        const guideHtml = o.guide ? `<span class="guide-glyph ${usePrint ? 'print' : 'cursive'}">${esc(w)}</span>` : '';
+        html += `<div class="word-line">${guideSvg()}` +
           `<div class="glyph-layer">${guideHtml}</div></div>`;
       }
       html += `</div>`;
@@ -964,19 +949,19 @@ function renderWorksheet() {
   if (currentSentences.length) {
     html += `<div class="ws-section-title">Sentences <span class="en-hint">sentence practice</span></div>`;
     currentSentences.forEach(s => {
-      html += `<div class="word-block" data-sentence="${esc(s)}">`;
+      html += `<div class="word-block sentence-block">`;
       html += `<div class="word-info">`;
       html += `<span class="word-name">${esc(s)}</span>`;
-      html += ` <button class="btn-ghost" onclick="speak('${esc(s).replace(/'/g,"\\'")}','${document.getElementById('optAccent').value}')">🔊</button>`;
+      html += ` <button class="btn-ghost" onclick="speak('${esc(s).replace(/'/g,"\\'")}','${accent}')">🔊</button>`;
       html += `</div>`;
       stylesLoop(usePrint, useCursive, st => {
-        html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg('word')}` +
-          `<div class="glyph-layer" style="bottom:calc(var(--glyph-bottom) * 0.5);"><span class="demo-glyph ${st}" data-ch="${esc(s)}" data-font="${st}" data-word="1" style="font-size:calc(var(--cell-font) * 0.5);">${esc(s)}</span></div></div>`;
+        html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
+          `<div class="glyph-layer sentence-glyph" style="bottom:0;"><span class="demo-glyph ${st}">${esc(s)}</span></div></div>`;
       });
-      for (let r = 0; r < 1; r++) {
-        const guideHtml = o.guide ? `<span class="guide-glyph ${usePrint ? 'print' : 'cursive'}" data-ch="${esc(s)}" data-font="${usePrint ? 'print' : 'cursive'}" data-word="1" style="font-size:calc(var(--cell-font) * 0.5);">${esc(s)}</span>` : '';
-        html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg('word')}` +
-          `<div class="glyph-layer" style="bottom:calc(var(--glyph-bottom) * 0.5);">${guideHtml}</div></div>`;
+      for (let r = 0; r < 2; r++) {
+        const guideHtml = o.guide ? `<span class="guide-glyph ${usePrint ? 'print' : 'cursive'}">${esc(s)}</span>` : '';
+        html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
+          `<div class="glyph-layer sentence-glyph" style="bottom:0;">${guideHtml}</div></div>`;
       }
       html += `</div>`;
     });
@@ -1016,7 +1001,7 @@ function openStroke(ch) {
   const grid = document.getElementById('strokeGrid');
   grid.innerHTML = '';
 
-  // variants: [label, char, font data set, isCursive]
+  // variants: {label, sub, ch, strokes}
   const variants = [
     { label: 'Print', sub: 'Uppercase', ch: up, strokes: (typeof LETTER_STROKES !== 'undefined' && LETTER_STROKES[up]) || null },
     { label: 'Print', sub: 'Lowercase', ch: lo, strokes: (typeof LETTER_STROKES !== 'undefined' && LETTER_STROKES[lo]) || null },
@@ -1208,7 +1193,7 @@ function strokeReplay() {
 }
 function clearStrokeTimers() {
   if (strokeTimers) {
-    strokeTimers.forEach(t => { try { clearTimeout(t); } catch(e) {} });
+    strokeTimers.forEach(t => { try { clearInterval(t); clearTimeout(t); } catch(e) {} });
     strokeTimers = [];
   }
 }
@@ -1240,31 +1225,20 @@ function toggleQuizMode() {
   document.querySelectorAll('#worksheet .demo-glyph').forEach(g => {
     g.style.display = quizMode ? 'none' : '';
   });
-  if (typeof currentOptions === 'object') currentOptions.quizMode = quizMode;
 }
 
 // ===== PRINT =====
 function printWorksheet() {
   // Chineseword lesson: ensure fonts are fully loaded before printing.
   // If Playwrite/Kalam aren't ready, print/PDF shows fallback system font.
-  if (document.fonts && document.fonts.ready) {
-    Promise.all([
-      document.fonts.load('400 16px Kalam'),
-      document.fonts.load('400 16px Playwrite')
-    ]).catch(() => {}).then(() => { window.print(); });
-  } else {
-    window.print();
-  }
+  preloadFonts(['Kalam', 'Playwrite']).then(() => { window.print(); });
 }
 
 // ===== FONT BOOTSTRAP =====
 // Redundant backup for slow-connection scenarios.
 // The primary load is in DOMContentLoaded (before first render).
 window.addEventListener('load', () => {
-  try {
-    document.fonts && document.fonts.load('400 16px Kalam');
-    document.fonts.load('400 16px Playwrite');
-  } catch(e) {}
+  preloadFonts(['Kalam', 'Playwrite']);
 });
 
 // ===== BACK TO TOP =====
