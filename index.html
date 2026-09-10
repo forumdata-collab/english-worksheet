@@ -342,6 +342,15 @@ body {
 }
 .back-to-top.show { display: block; }
 
+/* ===== SECTION TABS ===== */
+.qs-section {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-top: 10px; padding: 8px 10px; background: #EDF4FB;
+  border-radius: 8px; border: 1px solid var(--blue-light);
+}
+.qs-section .qs-label { font-size: 0.82em; font-weight: 700; color: var(--blue); }
+.qs-section .qs-btn.section-btn { font-size: 0.83em; white-space: nowrap; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 640px) {
   .hero h1 { font-size: 1.35em; }
@@ -410,6 +419,12 @@ body {
     <button class="qs-btn" data-case="both" onclick="setCase('both')">Aa</button>
     <button class="qs-btn" data-case="upper" onclick="setCase('upper')">A</button>
     <button class="qs-btn" data-case="lower" onclick="setCase('lower')">a</button>
+  </div>
+  <div class="quick-style qs-section">
+    <span class="qs-label">Section:</span>
+    <button class="qs-btn section-btn" data-section="letters" onclick="setSection('letters')">🔤 Letters</button>
+    <button class="qs-btn section-btn" data-section="words" onclick="setSection('words')">📝 Words</button>
+    <button class="qs-btn section-btn" data-section="copybook" onclick="setSection('copybook')">📖 Copybook <small style="font-weight:400">單字+句子</small></button>
   </div>
   <div class="actions">
     <button class="btn-primary" onclick="generate()">📝 Generate Worksheet</button>
@@ -486,10 +501,12 @@ body {
         </select>
       </div>
       <div class="opt-group">
-        <div class="toggle-row"><input type="checkbox" id="optWords" checked><label for="optWords">Word practice</label></div>
-      </div>
-      <div class="opt-group">
-        <div class="toggle-row"><input type="checkbox" id="optSentences" checked><label for="optSentences">Sentence practice</label></div>
+        <label>Section</label>
+        <select id="optSection">
+          <option value="letters">Letters only</option>
+          <option value="words">Words only</option>
+          <option value="copybook" selected>Copybook (words + sentences)</option>
+        </select>
       </div>
       <div class="opt-group">
         <div class="toggle-row"><input type="checkbox" id="optGuide" checked><label for="optGuide">Light tracing guide</label></div>
@@ -604,8 +621,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (saved.style) document.getElementById('optStyle').value = saved.style;
       if (saved.case_) document.getElementById('optCase').value = saved.case_;
       if (saved.accent) document.getElementById('optAccent').value = saved.accent;
-      document.getElementById('optWords').checked = saved.words !== false;
-      document.getElementById('optSentences').checked = saved.sentences !== false;
+      if (saved.section) document.getElementById('optSection').value = saved.section;
       document.getElementById('optGuide').checked = saved.guide !== false;
       document.getElementById('optShowHeader').checked = saved.showHeader !== false;
       document.getElementById('optDedup').checked = saved.dedup !== false;
@@ -637,6 +653,8 @@ function syncQuickBtns() {
   document.querySelectorAll('.qs-btn[data-style]').forEach(b => b.classList.toggle('active', b.dataset.style === st));
   const cs = document.getElementById('optCase').value;
   document.querySelectorAll('.qs-btn[data-case]').forEach(b => b.classList.toggle('active', b.dataset.case === cs));
+  const sec = document.getElementById('optSection').value;
+  document.querySelectorAll('.qs-btn[data-section]').forEach(b => b.classList.toggle('active', b.dataset.section === sec));
 }
 
 function todayStr() {
@@ -651,6 +669,11 @@ function setStyle(s) {
 }
 function setCase(c) {
   document.getElementById('optCase').value = c;
+  syncQuickBtns();
+  generate();
+}
+function setSection(s) {
+  document.getElementById('optSection').value = s;
   syncQuickBtns();
   generate();
 }
@@ -762,8 +785,7 @@ function generate() {
       style: document.getElementById('optStyle').value,
       case_: document.getElementById('optCase').value,
       accent: document.getElementById('optAccent').value,
-      words: document.getElementById('optWords').checked,
-      sentences: document.getElementById('optSentences').checked,
+      section: document.getElementById('optSection').value,
       guide: document.getElementById('optGuide').checked,
       showHeader: document.getElementById('optShowHeader').checked,
       dedup: document.getElementById('optDedup').checked,
@@ -775,18 +797,21 @@ function generate() {
   const raw = document.getElementById('inputText').value.trim();
   if (!raw) { showToast('Please type some English text'); return; }
 
-  let letters = parseLetters(raw);
-  if (!letters.length) { showToast('No letters found — type A–Z'); return; }
-  const dedup = document.getElementById('optDedup').checked;
-  if (dedup) letters = [...new Set(letters.map(l => l.toLowerCase()))];
-  else letters = letters.map(l => l.toLowerCase());
-  // keep unique but preserve order, case handled at render
-  currentLetters = letters;
+  const section = document.getElementById('optSection').value || 'copybook';
 
-  const wordsOpt = document.getElementById('optWords').checked;
-  const sentOpt = document.getElementById('optSentences').checked;
-  currentWords = wordsOpt ? [...new Set(parseWords(raw))] : [];
-  currentSentences = sentOpt ? parseSentences(raw) : [];
+  // letters only rendered when section includes letters
+  if (section === 'letters') {
+    const ls = parseLetters(raw);
+    if (!ls.length) { showToast('No letters found — type A–Z'); return; }
+    const dedup = document.getElementById('optDedup').checked;
+    currentLetters = dedup ? [...new Set(ls.map(l => l.toLowerCase()))] : ls.map(l => l.toLowerCase());
+    currentWords = [];
+    currentSentences = [];
+  } else {
+    currentLetters = [];
+    currentWords = [...new Set(parseWords(raw))];
+    currentSentences = section === 'copybook' ? parseSentences(raw) : [];
+  }
 
   quizMode = false;
   currentOptions = {
