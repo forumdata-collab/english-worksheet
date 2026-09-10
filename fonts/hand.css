@@ -14,16 +14,16 @@
   src: url(kalam-700.woff2) format('woff2');
 }
 @font-face {
-  font-family: 'Caveat';
+  font-family: 'Playwrite';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(caveat-400.woff2) format('woff2');
+  src: url(playwrite-400.woff2) format('woff2');
 }
 @font-face {
-  font-family: 'Caveat';
+  font-family: 'Playwrite';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(caveat-700.woff2) format('woff2');
+  src: url(playwrite-700.woff2) format('woff2');
 }

@@ -50,7 +50,7 @@ body {
   top: -40px;
   font-size: 220px;
   opacity: 0.08;
-  font-family: "Caveat", "Kalam", cursive;
+  font-family: "Playwrite", "Kalam", cursive;
 }
 .hero h1 { font-size: 1.6em; font-weight: 700; letter-spacing: 0.04em; }
 .hero p { opacity: 0.92; margin-top: 4px; font-size: 0.88em; }
@@ -205,7 +205,7 @@ body {
   position: relative;
 }
 .letter-glyph.print { font-family: "Kalam", "Segoe Print", cursive; font-weight: 400; }
-.letter-glyph.cursive { font-family: "Caveat", cursive; font-weight: 400; }
+.letter-glyph.cursive { font-family: "Playwrite", cursive; font-weight: 400; }
 .letter-details { flex: 1; min-width: 0; }
 .letter-details .letter-name { font-size: 1.1em; font-weight: 700; }
 .letter-details .letter-name small { color: #8aa; font-weight: 500; font-size: 0.7em; }
@@ -238,7 +238,7 @@ body {
   transform-origin: center;
 }
 .hw-cell .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; }
-.hw-cell .glyph-layer span.cursive { font-family: "Caveat", cursive; }
+.hw-cell .glyph-layer span.cursive { font-family: "Playwrite", cursive; }
 .hw-cell .glyph-layer .guide-glyph { color: var(--guide-tint); }
 .hw-cell .glyph-layer .demo-glyph { color: var(--ink); }
 .cell-guides {
@@ -286,7 +286,7 @@ body {
   white-space: nowrap;
 }
 .word-line .glyph-layer span.print { font-family: "Kalam", "Segoe Print", cursive; }
-.word-line .glyph-layer span.cursive { font-family: "Caveat", cursive; }
+.word-line .glyph-layer span.cursive { font-family: "Playwrite", cursive; }
 .word-line .glyph-layer .guide-glyph { color: var(--guide-tint); }
 .word-line .glyph-layer .demo-glyph { color: var(--ink); }
 .word-line .cell-guides line.g-top { display: none; }
@@ -328,7 +328,7 @@ body {
   font-size: 150px; line-height: 1; color: var(--ink);
 }
 .stroke-stage .demo-big.print { font-family: "Kalam", "Segoe Print", cursive; }
-.stroke-stage .demo-big.cursive { font-family: "Caveat", cursive; }
+.stroke-stage .demo-big.cursive { font-family: "Playwrite", cursive; }
 .stroke-stage .stroke-note { color: #889; font-size: 0.85em; margin-top: 6px; }
 #strokeResult { margin-top: 10px; font-weight: 600; color: var(--green); min-height: 1.4em; }
 
@@ -557,7 +557,7 @@ body {
   </div>
   <div id="wsContent"></div>
   <div class="ws-footer">
-    <div id="wsFooter">Fonts: Kalam &amp; Caveat (OFL) · Made with ✏️</div>
+    <div id="wsFooter">Fonts: Kalam &amp; Playwrite (OFL) · Made with ✏️</div>
     <div class="footer-links">
       <a href="https://ko-fi.com/forumdata" target="_blank" rel="noopener">☕ Buy me a coffee</a>
       <a href="mailto:forumdata@gmail.com">✉️ Contact</a>
@@ -601,7 +601,7 @@ let currentOptions = {};
 let quizMode = false;
 // stroke modal state (init'd at top of stroke section)
 const SIZE_PX = { xs: 56, sm: 72, md: 96, lg: 128 };
-const STYLE_FONT = { print: 'Kalam', cursive: 'Caveat' };
+const STYLE_FONT = { print: 'Kalam', cursive: 'Playwrite' };
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -639,8 +639,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       document.fonts.load('400 16px Kalam');
       document.fonts.load('700 16px Kalam');
-      document.fonts.load('400 16px Caveat');
-      document.fonts.load('700 16px Caveat');
+      document.fonts.load('400 16px Playwrite');
+      document.fonts.load('700 16px Playwrite');
       // wait for the real glyphs, then re-render so baseline alignment uses
       // the actual font metrics (fallback → webfont changes the ink box)
       document.fonts.ready.then(() => { setTimeout(() => { if (document.querySelector('.demo-glyph')) generate(); }, 30); });
@@ -1074,7 +1074,7 @@ function buildStrokeSvg(svg, ch, strokes, style) {
     t.setAttribute('x', '50'); t.setAttribute('y', '85');
     t.setAttribute('text-anchor', 'middle');
     t.setAttribute('font-size', '70');
-    t.setAttribute('font-family', style === 'cursive' ? '"Caveat", cursive' : '"Kalam", "Segoe Print", cursive');
+    t.setAttribute('font-family', style === 'cursive' ? '"Playwrite", cursive' : '"Kalam", "Segoe Print", cursive');
     t.textContent = ch;
     svg.appendChild(t);
     return;
@@ -1246,11 +1246,11 @@ function toggleQuizMode() {
 // ===== PRINT =====
 function printWorksheet() {
   // Chineseword lesson: ensure fonts are fully loaded before printing.
-  // If Caveat/Kalam aren't ready, print/PDF shows fallback system font.
+  // If Playwrite/Kalam aren't ready, print/PDF shows fallback system font.
   if (document.fonts && document.fonts.ready) {
     Promise.all([
       document.fonts.load('400 16px Kalam'),
-      document.fonts.load('400 16px Caveat')
+      document.fonts.load('400 16px Playwrite')
     ]).catch(() => {}).then(() => { window.print(); });
   } else {
     window.print();
@@ -1263,7 +1263,7 @@ function printWorksheet() {
 window.addEventListener('load', () => {
   try {
     document.fonts && document.fonts.load('400 16px Kalam');
-    document.fonts.load('400 16px Caveat');
+    document.fonts.load('400 16px Playwrite');
   } catch(e) {}
 });
 
