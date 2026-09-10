@@ -303,8 +303,22 @@ body {
   max-width: 560px; width: 100%; max-height: 85vh; overflow: auto;
   box-shadow: 0 10px 40px rgba(0,0,0,0.2);
 }
+.modal-box.wide { max-width: 900px; }
 .modal-box h3 { color: var(--blue); margin-bottom: 12px; }
 .modal-box .modal-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.stroke-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.stroke-nav #strokeNavPos { font-size: 0.85em; color: #667; }
+.stroke-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.stroke-box {
+  background: #fff; border: 2px solid var(--blue-light); border-radius: 8px;
+  padding: 8px; text-align: center;
+}
+.stroke-box .sb-label { font-size: 0.78em; font-weight: 700; color: var(--blue); margin-bottom: 4px; }
+.stroke-box .sb-label small { color: #8aa; font-weight: 500; margin-left: 2px; }
+.stroke-box svg { width: 100%; height: auto; background: #fff; border-radius: 4px; }
+.stroke-box .sb-note { font-size: 0.72em; color: #99a; margin-top: 3px; min-height: 1.2em; }
+.stroke-box.active-box { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue-light); }
+.stroke-note { color: #889; font-size: 0.85em; margin-top: 8px; }
 .stroke-stage {
   background: #fff; border: 2px solid var(--blue-light); border-radius: 8px;
   padding: 20px; display: flex; justify-content: center; align-items: center;
@@ -553,16 +567,21 @@ body {
 
 <!-- MODALS -->
 <div class="modal-overlay" id="strokeModal">
-  <div class="modal-box">
+  <div class="modal-box wide">
     <h3 id="strokeModalTitle">Write</h3>
-    <div class="stroke-stage">
-      <svg id="strokeCanvas" viewBox="0 0 100 120" preserveAspectRatio="xMidYMid meet"
-           style="width:220px;height:264px;background:#fff;border:2px solid var(--blue-light);border-radius:8px;"></svg>
-      <div class="stroke-note" id="strokeNote"></div>
+    <div class="stroke-nav no-print">
+      <button class="btn-ghost" onclick="strokePrev()">◀ Prev</button>
+      <span id="strokeNavPos"></span>
+      <button class="btn-ghost" onclick="strokeNext()">Next ▶</button>
+      <span style="flex:1"></span>
+      <button class="btn-ghost" onclick="strokeReplay()">↻ Replay</button>
     </div>
+    <div id="strokeGrid" class="stroke-grid">
+      <!-- 4 variant boxes injected by JS -->
+    </div>
+    <div class="stroke-note" id="strokeNote"></div>
     <div id="strokeResult"></div>
     <div class="modal-actions">
-      <button class="btn-ghost" onclick="strokeReplay()">↻ Replay</button>
       <button class="btn-ghost" onclick="closeModal('strokeModal')">Close</button>
     </div>
   </div>
@@ -572,6 +591,7 @@ body {
 <button class="back-to-top no-print" id="backToTop" title="Back to top">↑</button>
 
 <script src="strokes.js"></script>
+<script src="strokes_cursive.js"></script>
 <script>
 // ===== STATE =====
 let currentLetters = [];
@@ -579,7 +599,7 @@ let currentWords = [];
 let currentSentences = [];
 let currentOptions = {};
 let quizMode = false;
-let strokeTimer = null;
+// stroke modal state (init'd at top of stroke section)
 const SIZE_PX = { xs: 56, sm: 72, md: 96, lg: 128 };
 const STYLE_FONT = { print: 'Kalam', cursive: 'Caveat' };
 
@@ -983,159 +1003,218 @@ function phonetic(ch) {
 }
 
 // ===== STROKE MODAL (animated stroke-order reveal) =====
-let strokeRAF = null;
-let strokeAnim = null;   // {paths, idx, start, speed}
+let strokeTimers = [];
+let strokeCurrentLetter = '';
 // LETTER_STROKES is a global const from a separate data script (loaded before
 // this one). Do NOT re-declare it here — that would shadow the data or collide.
 
 function openStroke(ch) {
-  const strokes = (typeof LETTER_STROKES !== 'undefined' && LETTER_STROKES && LETTER_STROKES[ch]) ? LETTER_STROKES[ch] : null;
-  document.getElementById('strokeModalTitle').textContent = `Letter: ${ch.toUpperCase()} (${ch})`;
+  const up = ch.toUpperCase();
+  const lo = ch.toLowerCase();
+  document.getElementById('strokeModalTitle').textContent = `Letter: ${up} (${lo})`;
 
-  const canvas = document.getElementById('strokeCanvas');
-  if (!strokes) {
-    // Fallback: static print + cursive demo (pre-stroke-data path)
-    canvas.innerHTML = '';
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('transform', 'translate(0 30)');
-    const t1 = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    t1.setAttribute('x', '50'); t1.setAttribute('y', '80');
-    t1.setAttribute('text-anchor', 'middle');
-    t1.setAttribute('font-size', '78');
-    t1.setAttribute('font-family', '"Kalam", "Segoe Print", cursive');
-    t1.textContent = ch;
-    g.appendChild(t1);
-    canvas.appendChild(g);
-    document.getElementById('strokeNote').textContent = 'Print letter — practice in the grids below.';
-    openModal('strokeModal');
-    return;
-  }
+  const grid = document.getElementById('strokeGrid');
+  grid.innerHTML = '';
 
-  // build SVG: guide lines + stroke paths (all visible as light, one highlighted)
-  canvas.innerHTML = '';
+  // variants: [label, char, font data set, isCursive]
+  const variants = [
+    { label: 'Print', sub: 'Uppercase', ch: up, strokes: (typeof LETTER_STROKES !== 'undefined' && LETTER_STROKES[up]) || null },
+    { label: 'Print', sub: 'Lowercase', ch: lo, strokes: (typeof LETTER_STROKES !== 'undefined' && LETTER_STROKES[lo]) || null },
+    { label: 'Cursive', sub: 'Uppercase', ch: up, strokes: (typeof LETTER_STROKES_CURSIVE !== 'undefined' && LETTER_STROKES_CURSIVE[up]) || null },
+    { label: 'Cursive', sub: 'Lowercase', ch: lo, strokes: (typeof LETTER_STROKES_CURSIVE !== 'undefined' && LETTER_STROKES_CURSIVE[lo]) || null },
+  ];
+
+  let animTimers = [];
+  variants.forEach((v, vi) => {
+    const box = document.createElement('div');
+    box.className = 'stroke-box';
+    box.innerHTML = `<div class="sb-label">${v.label} <small>${v.sub}</small></div>`;
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 100 120');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    buildStrokeSvg(svg, v.ch, v.strokes, v.label.toLowerCase());
+    box.appendChild(svg);
+    const note = document.createElement('div');
+    note.className = 'sb-note';
+    note.textContent = v.strokes ? v.strokes.length + ' stroke' + (v.strokes.length === 1 ? '' : 's') : '';
+    box.appendChild(note);
+    grid.appendChild(box);
+
+    // animate each box
+    if (v.strokes && v.strokes.length) {
+      const timer = animateSvgBox(svg, note, box, vi);
+      if (timer) animTimers.push(timer);
+    }
+  });
+
+  document.getElementById('strokeNote').textContent =
+    'Print and cursive, uppercase & lowercase — watch each stroke order, then write it yourself.';
+  document.getElementById('strokeResult').textContent = '';
+  openModal('strokeModal');
+
+  // store timers + current letter for prev/next/replay
+  strokeTimers = animTimers;
+  strokeCurrentLetter = ch;
+  updateStrokeNav();
+}
+
+function buildStrokeSvg(svg, ch, strokes, style) {
   const NS = 'http://www.w3.org/2000/svg';
-  // handwriting guide lines (same positions as cells: top 5, mid 38, base 65, bottom 96)
+  // guides
   const gl = document.createElementNS(NS, 'g');
-  gl.setAttribute('class', 'modal-guides');
   gl.innerHTML = '<line x1="0" y1="5" x2="100" y2="5" stroke="#B9CFE4"/>' +
     '<line x1="0" y1="38" x2="100" y2="38" stroke="#B9CFE4" stroke-dasharray="4 4"/>' +
     '<line x1="0" y1="65" x2="100" y2="65" stroke="#7FA8C8" stroke-width="2"/>' +
     '<line x1="0" y1="96" x2="100" y2="96" stroke="#C3D6E8"/>';
-  canvas.appendChild(gl);
+  svg.appendChild(gl);
 
-  // guide glyph (light full letter for reference)
+  if (!strokes || !strokes.length) {
+    // fallback: static text glyph
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', '50'); t.setAttribute('y', '85');
+    t.setAttribute('text-anchor', 'middle');
+    t.setAttribute('font-size', '70');
+    t.setAttribute('font-family', style === 'cursive' ? '"Caveat", cursive' : '"Kalam", "Segoe Print", cursive');
+    t.textContent = ch;
+    svg.appendChild(t);
+    return;
+  }
+
+  // faint reference glyph
   const ref = document.createElementNS(NS, 'g');
-  ref.setAttribute('class', 'modal-ref');
+  ref.setAttribute('class', 'sb-ref');
   strokes.forEach(d => {
     const p = document.createElementNS(NS, 'path');
     p.setAttribute('d', d);
     p.setAttribute('stroke', 'var(--guide-tint)');
-    p.setAttribute('stroke-width', '3');
+    p.setAttribute('stroke-width', '2.5');
     p.setAttribute('fill', 'none');
     p.setAttribute('stroke-linecap', 'round');
     p.setAttribute('stroke-linejoin', 'round');
     ref.appendChild(p);
   });
-  canvas.appendChild(ref);
+  svg.appendChild(ref);
 
-  // active strokes (revealed one by one)
+  // active strokes (animated)
   const active = document.createElementNS(NS, 'g');
-  active.setAttribute('class', 'modal-active');
+  active.setAttribute('class', 'sb-active');
   strokes.forEach((d, i) => {
     const p = document.createElementNS(NS, 'path');
     p.setAttribute('d', d);
     p.setAttribute('stroke', 'var(--ink)');
-    p.setAttribute('stroke-width', '3.5');
+    p.setAttribute('stroke-width', '3');
     p.setAttribute('fill', 'none');
     p.setAttribute('stroke-linecap', 'round');
     p.setAttribute('stroke-linejoin', 'round');
-    p.style.opacity = i === 0 ? '1' : '0.06';
-    // stroke-dasharray trick: full length then offset to hide, animate to reveal
-    const len = p.getTotalLength ? p.getTotalLength() : 100;
-    p.dataset.len = len;
-    p.setAttribute('stroke-dasharray', len);
-    p.setAttribute('stroke-dashoffset', len);
+    p.style.opacity = i === 0 ? '1' : '0.05';
+    p.dataset.len = 0;
     active.appendChild(p);
   });
-  canvas.appendChild(active);
+  svg.appendChild(active);
 
-  // stroke number labels
+  // number labels
   const nums = document.createElementNS(NS, 'g');
-  nums.setAttribute('class', 'modal-nums');
+  nums.setAttribute('class', 'sb-nums');
   strokes.forEach((d, i) => {
     const t = document.createElementNS(NS, 'text');
-    t.setAttribute('font-size', '9');
+    t.setAttribute('font-size', '7');
     t.setAttribute('fill', '#C0392B');
     t.setAttribute('font-weight', '700');
     t.setAttribute('text-anchor', 'middle');
     t.textContent = String(i + 1);
-    // place near stroke start
-    const p = document.createElementNS(NS, 'path');
-    p.setAttribute('d', d);
-    canvas.appendChild(p);
-    const pt = p.getPointAtLength ? p.getPointAtLength(2) : { x: 8, y: 8 + i * 10 };
-    t.setAttribute('x', pt.x + 3);
-    t.setAttribute('y', pt.y - 4);
-    p.remove();
     nums.appendChild(t);
   });
-  canvas.appendChild(nums);
+  svg.appendChild(nums);
+  svg._sbNums = [...nums.querySelectorAll('text')];
+  svg._sbActive = [...active.querySelectorAll('path')];
+  svg._sbRef = ref;
+}
 
-  document.getElementById('strokeNote').textContent =
-    strokes.length + ' stroke' + (strokes.length === 1 ? '' : 's') + ' — watch the order, then write it yourself.';
-  document.getElementById('strokeResult').textContent = '';
-  openModal('strokeModal');
-  clearTimeout(strokeTimer);
-  strokeTimer = null;
+function placeNumLabels(svg) {
+  // number at each stroke's START (teaches where to begin the stroke)
+  const nums = svg._sbNums || [];
+  const strokes = svg._sbActive || [];
+  strokes.forEach((p, i) => {
+    if (!nums[i]) return;
+    const len = parseFloat(p.dataset.len) || 0;
+    const at = Math.max(2, Math.min(len * 0.08, len - 0.1));
+    try {
+      const pt = p.getPointAtLength(at);
+      nums[i].setAttribute('x', pt.x - 1);
+      nums[i].setAttribute('y', pt.y - 3);
+    } catch(e) {
+      nums[i].setAttribute('x', 8 + i * 10);
+      nums[i].setAttribute('y', 8 + i * 10);
+    }
+  });
+}
 
-  // start animation — setInterval + CLOCK-BASED progress (Date.now, not
-  // accumulated steps): if the browser throttles intervals (background tab,
-  // headless), each tick still catches up to the correct position instead of
-  // crawling. rAF stalls entirely in unfocused tabs; interval + clock is the
-  // reliable combo.
-  const paths = [...active.querySelectorAll('path')];
-  const DURATION = 700; // ms per stroke
-  const STEP = 16;      // ~60fps
+function animateSvgBox(svg, note, box, vi) {
+  const paths = svg._sbActive || [];
+  if (!paths.length) return null;
+  const DURATION = 600;
+  const STEP = 16;
   let idx = 0;
   let startTs = Date.now();
-  // getTotalLength on a just-attached node can be 0 — force reflow first
-  paths.forEach(p => { if (!p.dataset.len || p.dataset.len == 0) p.dataset.len = p.getTotalLength() || 100; });
-  strokeTimer = setInterval(() => {
-    const elapsed = Date.now() - startTs;
-    const el = Math.min(elapsed / DURATION, 1);
-    if (el >= 1) {
-      // finish current stroke
-      paths[idx].setAttribute('stroke-dashoffset', 0);
-      if (idx + 1 < paths.length) {
-        idx++;
-        paths[idx].style.opacity = '1';
-        paths[idx - 1].style.opacity = '0.35';  // keep written strokes visible but dimmed
-        startTs = Date.now();
-      } else {
-        document.getElementById('strokeResult').textContent = '🎉 Done — now write it yourself!';
-        clearInterval(strokeTimer);
-        strokeTimer = null;
+  // compute lengths after attachment
+  paths.forEach(p => { if (!p.dataset.len || p.dataset.len == 0) p.dataset.len = p.getTotalLength() || 60; });
+  placeNumLabels(svg);
+
+  // stagger start across the 4 boxes
+  const delay = vi * 450;
+  const t = setTimeout(() => {
+    const timer = setInterval(() => {
+      const elapsed = Date.now() - startTs;
+      const el = Math.min(elapsed / DURATION, 1);
+      if (el >= 1) {
+        paths[idx].setAttribute('stroke-dashoffset', 0);
+        if (idx + 1 < paths.length) {
+          idx++;
+          paths[idx].style.opacity = '1';
+          paths[idx - 1].style.opacity = '0.35';
+          startTs = Date.now();
+        } else {
+          if (note) note.textContent = '✓ done';
+          clearInterval(timer);
+        }
+        return;
       }
-      return;
-    }
-    const remain = paths[idx].dataset.len * (1 - el);
-    paths[idx].setAttribute('stroke-dashoffset', remain);
-  }, STEP);
+      const remain = paths[idx].dataset.len * (1 - el);
+      paths[idx].setAttribute('stroke-dashoffset', remain);
+    }, STEP);
+    strokeTimers.push(timer);
+  }, delay);
+  return t;  // delay timeout
+}
+
+function updateStrokeNav() {
+  const pos = document.getElementById('strokeNavPos');
+  if (pos) {
+    const idx = currentLetters.indexOf(strokeCurrentLetter);
+    pos.textContent = idx >= 0 ? `${idx + 1} / ${currentLetters.length}` : '';
+  }
+}
+function strokePrev() {
+  const idx = currentLetters.indexOf(strokeCurrentLetter);
+  if (idx > 0) openStroke(currentLetters[idx - 1]);
+}
+function strokeNext() {
+  const idx = currentLetters.indexOf(strokeCurrentLetter);
+  if (idx >= 0 && idx < currentLetters.length - 1) openStroke(currentLetters[idx + 1]);
 }
 function strokeReplay() {
-  if (strokeTimer) { clearInterval(strokeTimer); strokeTimer = null; }
-  if (strokeRAF) cancelAnimationFrame(strokeRAF);
-  const m = document.getElementById('strokeModalTitle').textContent.match(/\((\w)\)/);
-  if (m) openStroke(m[1]);
+  clearStrokeTimers();
+  if (strokeCurrentLetter) openStroke(strokeCurrentLetter);
+}
+function clearStrokeTimers() {
+  if (strokeTimers) {
+    strokeTimers.forEach(t => { try { clearTimeout(t); } catch(e) {} });
+    strokeTimers = [];
+  }
 }
 function closeModal(id) {
   document.getElementById(id).classList.remove('show');
-  if (id === 'strokeModal') {
-    if (strokeTimer) { clearInterval(strokeTimer); strokeTimer = null; }
-    if (strokeRAF) cancelAnimationFrame(strokeRAF);
-    strokeRAF = null;
-    document.body.style.overflow = '';
-  }
+  if (id === 'strokeModal') clearStrokeTimers();
   document.body.style.overflow = '';
 }
 function openModal(id) {
