@@ -613,6 +613,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // sync quick-style buttons with current select values
   syncQuickBtns();
   generate();
+  // Eager font warm-up — same lesson as chineseword: swap+preload so the
+  // handwriting fonts render immediately instead of falling back to system
+  // fonts on first paint (esp. before print/PDF).
+  if (document.fonts && document.fonts.load) {
+    try {
+      document.fonts.load('400 16px Kalam');
+      document.fonts.load('700 16px Kalam');
+      document.fonts.load('400 16px Caveat');
+      document.fonts.load('700 16px Caveat');
+      // wait for the real glyphs, then re-render so baseline alignment uses
+      // the actual font metrics (fallback → webfont changes the ink box)
+      document.fonts.ready.then(() => { setTimeout(() => { if (document.querySelector('.demo-glyph')) generate(); }, 30); });
+    } catch(e) {}
+  }
 });
 
 function syncQuickBtns() {
@@ -1029,13 +1043,27 @@ function toggleQuizMode() {
 }
 
 // ===== PRINT =====
-function printWorksheet() { window.print(); }
+function printWorksheet() {
+  // Chineseword lesson: ensure fonts are fully loaded before printing.
+  // If Caveat/Kalam aren't ready, print/PDF shows fallback system font.
+  if (document.fonts && document.fonts.ready) {
+    Promise.all([
+      document.fonts.load('400 16px Kalam'),
+      document.fonts.load('400 16px Caveat')
+    ]).catch(() => {}).then(() => { window.print(); });
+  } else {
+    window.print();
+  }
+}
 
-// ===== OPTICAL NORMALIZATION (optional sizing consistency) =====
-// English letters are simpler than CJK; skip ink normalization but add font weights
+// ===== FONT BOOTSTRAP =====
+// Redundant backup for slow-connection scenarios.
+// The primary load is in DOMContentLoaded (before first render).
 window.addEventListener('load', () => {
-  // ensure fonts loaded for print
-  try { document.fonts && document.fonts.load('16px Kalam'); document.fonts.load('16px Caveat'); } catch(e) {}
+  try {
+    document.fonts && document.fonts.load('400 16px Kalam');
+    document.fonts.load('400 16px Caveat');
+  } catch(e) {}
 });
 
 // ===== BACK TO TOP =====
