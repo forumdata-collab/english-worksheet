@@ -940,9 +940,7 @@ function renderWorksheet() {
             const perRowAttr = o.perRow !== 'auto' ? ` data-perrow="${o.perRow}" style="--n:${o.perRow}"` : '';
             html += `<div class="practice-row"${perRowAttr}>`;
             for (let r = 0; r < o.practice; r++) {
-              const guideHtml = o.guide ? `<span class="guide-glyph ${st}">${esc(v.text)}</span>` : '';
-              html += `<div class="hw-cell practice-cell">${guideSvg()}` +
-                `<div class="glyph-layer">${guideHtml}</div></div>`;
+              html += practiceCellHtml(v.text, st, { wrapCls: 'hw-cell practice-cell', guide: o.guide });
             }
             html += `</div>`;
           });
@@ -969,9 +967,7 @@ function renderWorksheet() {
       });
       // practice lines (2)
       for (let r = 0; r < 2; r++) {
-        const guideHtml = o.guide ? `<span class="guide-glyph ${usePrint ? 'print' : 'cursive'}">${esc(w)}</span>` : '';
-        html += `<div class="word-line">${guideSvg()}` +
-          `<div class="glyph-layer">${guideHtml}</div></div>`;
+        html += practiceCellHtml(w, usePrint ? 'print' : 'cursive', { guide: o.guide });
       }
       html += `</div>`;
     });
@@ -992,9 +988,11 @@ function renderWorksheet() {
           `<div class="glyph-layer sentence-glyph" style="bottom:0;"><span class="demo-glyph ${st}">${esc(s)}</span></div></div>`;
       });
       for (let r = 0; r < 2; r++) {
-        const guideHtml = o.guide ? `<span class="guide-glyph ${usePrint ? 'print' : 'cursive'}">${esc(s)}</span>` : '';
-        html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
-          `<div class="glyph-layer sentence-glyph" style="bottom:0;">${guideHtml}</div></div>`;
+        html += practiceCellHtml(s, usePrint ? 'print' : 'cursive', {
+          wrapStyle: 'height:calc(var(--cell-practice) * 0.5);',
+          layerCls: 'sentence-glyph', layerStyle: 'bottom:0;',
+          guide: o.guide
+        });
       }
       html += `</div>`;
     });
@@ -1007,6 +1005,15 @@ function renderWorksheet() {
 function stylesLoop(usePrint, useCursive, fn) {
   if (usePrint) fn('print');
   if (useCursive) fn('cursive');
+}
+
+// One practice-cell builder shared by Letters/Words/Sentences (guide-glyph overlay).
+function practiceCellHtml(text, st, o2 = {}) {
+  const guideHtml = o2.guide ? `<span class="guide-glyph ${st}">${esc(text)}</span>` : '';
+  const wrapStyle = o2.wrapStyle ? ` style="${o2.wrapStyle}"` : '';
+  const layerStyle = o2.layerStyle ? ` style="${o2.layerStyle}"` : '';
+  return `<div class="${o2.wrapCls || 'word-line'}"${wrapStyle}>${guideSvg()}` +
+    `<div class="glyph-layer${o2.layerCls ? ' ' + o2.layerCls : ''}"${layerStyle}>${guideHtml}</div></div>`;
 }
 
 function phonetic(ch) {
