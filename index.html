@@ -965,10 +965,15 @@ function renderWorksheet() {
         html += `<div class="word-line">${guideSvg()}` +
           `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(w)}</span></div></div>`;
       });
-      // practice lines (2)
-      for (let r = 0; r < 2; r++) {
-        html += practiceCellHtml(w, usePrint ? 'print' : 'cursive', { guide: o.guide });
-      }
+      // practice lines — one per selected style (both = print + cursive),
+      // single-style mode keeps 2 lines for extra repetition
+      const prStyles = [];
+      if (usePrint) prStyles.push('print');
+      if (useCursive) prStyles.push('cursive');
+      if (prStyles.length === 1) prStyles.push(prStyles[0]);
+      prStyles.forEach(st => {
+        html += practiceCellHtml(w, st, { guide: o.guide });
+      });
       html += `</div>`;
     });
   }
@@ -987,13 +992,17 @@ function renderWorksheet() {
         html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
           `<div class="glyph-layer sentence-glyph" style="bottom:0;"><span class="demo-glyph ${st}">${esc(s)}</span></div></div>`;
       });
-      for (let r = 0; r < 2; r++) {
-        html += practiceCellHtml(s, usePrint ? 'print' : 'cursive', {
+      const prStyles2 = [];
+      if (usePrint) prStyles2.push('print');
+      if (useCursive) prStyles2.push('cursive');
+      if (prStyles2.length === 1) prStyles2.push(prStyles2[0]);
+      prStyles2.forEach(st => {
+        html += practiceCellHtml(s, st, {
           wrapStyle: 'height:calc(var(--cell-practice) * 0.5);',
           layerCls: 'sentence-glyph', layerStyle: 'bottom:0;',
           guide: o.guide
         });
-      }
+      });
       html += `</div>`;
     });
   }
