@@ -244,6 +244,8 @@ body {
 /* guide modes */
 .guide-dashed .cell-guides line { stroke-dasharray: 4 4; }
 .guide-blank .cell-guides { display: none; }
+/* 天草泥三色模板：彩色底上導線同描紅字母要加深少少先睇到 */
+.guide-caoni { --guide-line: #8FB4D0; --guide-tint: #A8C4D8; }
 
 /* ===== PRACTICE ROWS ===== */
 .practice-row { display: flex; flex-wrap: wrap; gap: 0; margin-top: 4px; }
@@ -384,6 +386,8 @@ body {
     height: var(--cell-practice) !important;
   }
   .cell-guides line { stroke-width: 1.6; }
+  /* 天草泥三色模板：ID+class specificity 先壓得住上面 #worksheet 嘅 !important */
+  #worksheet.guide-caoni { --guide-line: #8FB4D0 !important; --guide-tint: #A8C4D8 !important; }
 }
 </style>
 </head>
@@ -440,13 +444,15 @@ body {
     <h3>📐 Layout</h3>
     <div class="opt-grid">
       <div class="opt-group">
-        <label>Letter practice cells</label>
-        <input type="number" id="optPractice" value="4" min="0" max="12">
+        <label>Practice rows (per item)</label>
+        <input type="number" id="optPractice" value="4" min="0" max="20">
       </div>
       <div class="opt-group">
         <label>Guide style</label>
         <select id="optGuideStyle">
           <option value="standard" selected>Standard (4-line)</option>
+          <option value="caoni">Sky·Grass·Mud (picture)</option>
+          <option value="caoni-color">Sky·Grass·Mud (colours only)</option>
           <option value="dashed">Dashed guides</option>
           <option value="blank">Blank</option>
         </select>
@@ -613,7 +619,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (saved) {
       if (saved.practice != null) document.getElementById('optPractice').value = saved.practice;
       if (saved.size) document.getElementById('optSize').value = saved.size;
-      if (saved.guideStyle) document.getElementById('optGuideStyle').value = saved.guideStyle;
+      if (['standard','caoni','caoni-color','dashed','blank'].includes(saved.guideStyle)) {
+        document.getElementById('optGuideStyle').value = saved.guideStyle;
+      }
       if (saved.perRow) document.getElementById('optPerRow').value = saved.perRow;
       if (saved.printSize) {
         const v = saved.printSize;
@@ -821,7 +829,7 @@ function generate() {
 
   quizMode = false;
   currentOptions = {
-    practice: parseInt(document.getElementById('optPractice').value) || 4,
+    practice: (() => { const v = parseInt(document.getElementById('optPractice').value, 10); return isNaN(v) ? 4 : Math.max(0, v); })(),
     size: document.getElementById('optSize').value || 'md',
     guideStyle: document.getElementById('optGuideStyle').value || 'standard',
     perRow: document.getElementById('optPerRow').value || 'auto',
@@ -845,10 +853,33 @@ function generate() {
 }
 
 // ===== RENDER =====
-function guideSvg() {
+// 天草泥三色模板（2026-09-19；同 chineseword 一樣嘅設計，但色帶對齊四線格）：
+// 天(淺藍) = 0→midline(38)，草(淺綠) = midline→baseline(38→65)，泥(淺棕) = baseline→底(65→100)。
+// 用原圖（caoni-bg.jpg）切片：<image> 3 倍闊 + 負 x 偏移，SVG viewport 自動裁走溢出，
+// 所以一行 3 格 = 原圖左/中/右三分之一。只喺 guide-caoni / guide-caoni-color 時注入。
+var CAONI_ACTIVE = false;
+var CAONI_IMG = true;
+function caoniPattern(slice) {
+  const s = slice || 0;
+  if (!CAONI_IMG) {          // 只有顏色
+    return `<g class="caoni-bg">` +
+      `<rect width="100" height="38" fill="#D9EAF7"/>` +
+      `<rect y="38" width="100" height="27" fill="#E3F2DD"/>` +
+      `<rect y="65" width="100" height="35" fill="#F1E7D8"/>` +
+      `</g>`;
+  }
+  return `<g class="caoni-bg">` +
+    `<image href="caoni-bg.jpg" x="${-100 * s}" y="0" width="300" height="100" preserveAspectRatio="none"/>` +
+    `<rect width="100" height="38" fill="#CFE6FA" fill-opacity="0.45"/>` +
+    `<rect y="38" width="100" height="27" fill="#D9EFCF" fill-opacity="0.45"/>` +
+    `<rect y="65" width="100" height="35" fill="#EFDFC4" fill-opacity="0.45"/>` +
+    `</g>`;
+}
+function guideSvg(slice) {
   // 4-line handwriting grid: top, dashed midline, baseline, bottom
   // viewBox 0-100: top 5, mid 38, base 65, bottom 96
   return `<svg class="cell-guides" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">` +
+    (CAONI_ACTIVE ? caoniPattern(slice) : '') +
     `<line class="g-top" x1="2" y1="5" x2="98" y2="5"/>` +
     `<line class="g-midline" x1="2" y1="38" x2="98" y2="38"/>` +
     `<line class="g-baseline" x1="2" y1="65" x2="98" y2="65"/>` +
@@ -882,8 +913,12 @@ function renderWorksheet() {
   ws.style.setProperty('--print-glyph-bottom', '15%');
 
   // guide class
-  ws.classList.remove('guide-dashed', 'guide-blank');
+  ws.classList.remove('guide-dashed', 'guide-blank', 'guide-caoni', 'guide-caoni-color');
+  CAONI_ACTIVE = (o.guideStyle === 'caoni' || o.guideStyle === 'caoni-color');
+  CAONI_IMG = (o.guideStyle === 'caoni');
   if (o.guideStyle === 'dashed') ws.classList.add('guide-dashed');
+  else if (o.guideStyle === 'caoni') ws.classList.add('guide-caoni');
+  else if (o.guideStyle === 'caoni-color') ws.classList.add('guide-caoni', 'guide-caoni-color');
   else if (o.guideStyle === 'blank') ws.classList.add('guide-blank');
 
   // header
@@ -940,7 +975,7 @@ function renderWorksheet() {
             const perRowAttr = o.perRow !== 'auto' ? ` data-perrow="${o.perRow}" style="--n:${o.perRow}"` : '';
             html += `<div class="practice-row"${perRowAttr}>`;
             for (let r = 0; r < o.practice; r++) {
-              html += practiceCellHtml(v.text, st, { wrapCls: 'hw-cell practice-cell', guide: o.guide });
+              html += practiceCellHtml(v.text, st, { wrapCls: 'hw-cell practice-cell', guide: o.guide, slice: r % 3 });
             }
             html += `</div>`;
           });
@@ -965,15 +1000,14 @@ function renderWorksheet() {
         html += `<div class="word-line">${guideSvg()}` +
           `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(w)}</span></div></div>`;
       });
-      // practice lines — one per selected style (both = print + cursive),
-      // single-style mode keeps 2 lines for extra repetition
+      // practice lines — cycle through selected styles, repeat o.practice times total
       const prStyles = [];
       if (usePrint) prStyles.push('print');
       if (useCursive) prStyles.push('cursive');
-      if (prStyles.length === 1) prStyles.push(prStyles[0]);
-      prStyles.forEach(st => {
-        html += practiceCellHtml(w, st, { guide: o.guide });
-      });
+      for (let r = 0; r < o.practice; r++) {
+        const st = prStyles[r % prStyles.length];
+        html += practiceCellHtml(w, st, { guide: o.guide, slice: r % 3 });
+      }
       html += `</div>`;
     });
   }
@@ -995,14 +1029,14 @@ function renderWorksheet() {
       const prStyles2 = [];
       if (usePrint) prStyles2.push('print');
       if (useCursive) prStyles2.push('cursive');
-      if (prStyles2.length === 1) prStyles2.push(prStyles2[0]);
-      prStyles2.forEach(st => {
+      for (let r = 0; r < o.practice; r++) {
+        const st = prStyles2[r % prStyles2.length];
         html += practiceCellHtml(s, st, {
           wrapStyle: 'height:calc(var(--cell-practice) * 0.5);',
           layerCls: 'sentence-glyph', layerStyle: 'bottom:0;',
-          guide: o.guide
+          guide: o.guide, slice: r % 3
         });
-      });
+      }
       html += `</div>`;
     });
   }
@@ -1021,7 +1055,7 @@ function practiceCellHtml(text, st, o2 = {}) {
   const guideHtml = o2.guide ? `<span class="guide-glyph ${st}">${esc(text)}</span>` : '';
   const wrapStyle = o2.wrapStyle ? ` style="${o2.wrapStyle}"` : '';
   const layerStyle = o2.layerStyle ? ` style="${o2.layerStyle}"` : '';
-  return `<div class="${o2.wrapCls || 'word-line'}"${wrapStyle}>${guideSvg()}` +
+  return `<div class="${o2.wrapCls || 'word-line'}"${wrapStyle}>${guideSvg(o2.slice)}` +
     `<div class="glyph-layer${o2.layerCls ? ' ' + o2.layerCls : ''}"${layerStyle}>${guideHtml}</div></div>`;
 }
 
