@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-09-19 — v1.7
+
+### Changed
+- **Footer 改為正式 "Sources & credits 資料來源與聲明" 區塊**（雙語）：Typefaces 字體 / Sky·Grass·Mud 天草泥 / Disclaimer 聲明 三項，取代原本一行 `Fonts: … · Made with ✏️`。標籤欄用 `grid-template-columns: max-content 1fr` + `.wsf-row { display: contents }` 令跨行自動對齊（長標籤如 "Sky·Grass·Mud 天草泥" 唔會推歪內文）。
+- **加入天草泥來源**：the three-band visual-cue concept comes from the「天草泥格線印章教材套」teaching set by the occupational therapy team at 協康會 Heep Hong Society.
+- **聲明**：unofficial teaching aid, not affiliated with/endorsed by the above organisations; third-party names and materials remain the property of their owners.
+
+## 2026-09-19 — v1.6
 ## 2026-09-19 — v1.6
 
 ### Fixed
