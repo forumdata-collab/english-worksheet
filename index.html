@@ -853,35 +853,43 @@ function generate() {
 }
 
 // ===== RENDER =====
-// 天草泥三色模板（2026-09-19；同 chineseword 一樣嘅設計，但色帶對齊四線格）：
-// 天(淺藍) = 0→midline(38)，草(淺綠) = midline→baseline(38→65)，泥(淺棕) = baseline→底(65→100)。
-// 用原圖（caoni-bg.jpg）切片：<image> 3 倍闊 + 負 x 偏移，SVG viewport 自動裁走溢出，
-// 所以一行 3 格 = 原圖左/中/右三分之一。只喺 guide-caoni / guide-caoni-color 時注入。
+// 天草泥三色模板（2026-09-19）。色帶界線跟**字體實際 metric**，唔係跟四線格嘅虛線：
+//   基線 = 格高 65%（大楷坐落泥上、x-height 頂 = 28.6 單位）；font-size = 格 × 0.64
+//   Andika（實測 actualBoundingBoxAscent）：x-height 0.51em → 天空底 = 65 − 0.51×64 = 32.4%
+//                                          cap 0.72em → 大楷頂 = 65 − 0.72×64 = 18.9%（天空之內）
+//                                          g/p 下伸 0.24em → 泥帶 = 65 → 80.4%+ ✓
+//   即：天 = 大楷頂以上嘅空間、草 = 小楷身（x-height 至基線）、泥 = 基線以下（只有 g y q p 尾插入）
+// 原圖切片：<image> 3 倍闊 + 負 x 偏移（一行 3 格 = 原圖左/中/右）。
 var CAONI_ACTIVE = false;
 var CAONI_IMG = true;
+var CAONI_XH = 31.5;   // 天空/草 界線（= x-height line；print 32.7 / cursive 31.7，取 31.5 令兩種字體嘅小楷身都留喺草區）
+var CAONI_BASE = 65;   // 草/泥 界線（= 基線）
 function caoniPattern(slice) {
   const s = slice || 0;
+  const xh = CAONI_XH, base = CAONI_BASE;
   if (!CAONI_IMG) {          // 只有顏色
     return `<g class="caoni-bg">` +
-      `<rect width="100" height="38" fill="#D9EAF7"/>` +
-      `<rect y="38" width="100" height="27" fill="#E3F2DD"/>` +
-      `<rect y="65" width="100" height="35" fill="#F1E7D8"/>` +
+      `<rect width="100" height="${xh}" fill="#D9EAF7"/>` +
+      `<rect y="${xh}" width="100" height="${base - xh}" fill="#E3F2DD"/>` +
+      `<rect y="${base}" width="100" height="${100 - base}" fill="#F1E7D8"/>` +
       `</g>`;
   }
   return `<g class="caoni-bg">` +
     `<image href="caoni-bg.jpg" x="${-100 * s}" y="0" width="300" height="100" preserveAspectRatio="none"/>` +
-    `<rect width="100" height="38" fill="#CFE6FA" fill-opacity="0.45"/>` +
-    `<rect y="38" width="100" height="27" fill="#D9EFCF" fill-opacity="0.45"/>` +
-    `<rect y="65" width="100" height="35" fill="#EFDFC4" fill-opacity="0.45"/>` +
+    `<rect width="100" height="${xh}" fill="#CFE6FA" fill-opacity="0.45"/>` +
+    `<rect y="${xh}" width="100" height="${base - xh}" fill="#D9EFCF" fill-opacity="0.45"/>` +
+    `<rect y="${base}" width="100" height="${100 - base}" fill="#EFDFC4" fill-opacity="0.45"/>` +
     `</g>`;
 }
 function guideSvg(slice) {
   // 4-line handwriting grid: top, dashed midline, baseline, bottom
   // viewBox 0-100: top 5, mid 38, base 65, bottom 96
+  // caoni 模式：中線移去真實 x-height（32.4），同天空/草色帶界線疊埋一齊
+  const midY = CAONI_ACTIVE ? CAONI_XH : 38;
   return `<svg class="cell-guides" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">` +
     (CAONI_ACTIVE ? caoniPattern(slice) : '') +
     `<line class="g-top" x1="2" y1="5" x2="98" y2="5"/>` +
-    `<line class="g-midline" x1="2" y1="38" x2="98" y2="38"/>` +
+    `<line class="g-midline" x1="2" y1="${midY}" x2="98" y2="${midY}"/>` +
     `<line class="g-baseline" x1="2" y1="65" x2="98" y2="65"/>` +
     `<line class="g-bottom" x1="2" y1="96" x2="98" y2="96"/>` +
     `</svg>`;
