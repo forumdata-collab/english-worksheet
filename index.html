@@ -254,6 +254,11 @@ body {
   flex: 0 0 calc((100% - 4px * (var(--n, 6) - 1)) / var(--n));
   aspect-ratio: 1;
 }
+/* perRow 模式格仔闊度唔再由 --cell-practice 決定，字級要跟住格仔：
+   否則字固定 61.44px 但格仔 216px（比例 0.285 而非 0.64），基線亦對唔上四線格 */
+@supports (container-type: inline-size) {
+  .practice-row[data-perrow] .practice-cell { container-type: inline-size; --cell-font: 64cqw; }
+}
 
 /* ===== WORD / SENTENCE LINES ===== */
 .word-block { margin-bottom: 18px; page-break-inside: avoid; }
@@ -976,20 +981,109 @@ function splitToFitLine(text, fontPx, families, maxPx) {
   return out.length ? out : [text];
 }
 
-function renderWorksheet() {
-  const o = currentOptions;
-  const accent = document.getElementById('optAccent').value || 'us';
-  const ws = document.getElementById('worksheet');
-  const content = document.getElementById('wsContent');
+// inline onclick 嘅字串參數：單引號要 escape。用 charCode 砌反斜線，免得全檔塞滿反斜線轉義。
+const BS = String.fromCharCode(92), APOS = String.fromCharCode(39);
+function jsArg(s) { return String(s).replace(/'/g, BS + APOS); }
 
-  // screen sizing — uniform ratio (0.64) across all sizes so baseline gap
-  // stays constant; per-font CSS margin corrections handle Andika vs Playwrite
-  // metric differences (see .glyph-layer span.print/.cursive margin-bottom).
+// 每個 section 一個 builder —— 原本 renderWorksheet 175 行包辦四個 section（Long Method + Divergent Change）。
+// ctx = { accent, styles, families, showUpper, showLower }
+function letterSectionHtml(o, ctx) {
+  if (!currentLetters.length) return '';
+  let html = `<div class="ws-section-title">Letters <span class="en-hint">字母練習</span></div>`;
+  [...new Set(currentLetters)].forEach(ch => {
+    const variants = [];
+    if (ctx.showUpper) variants.push(ch.toUpperCase());
+    if (ctx.showLower) variants.push(ch);
+    const perRowAttr = o.perRow !== 'auto' ? ` data-perrow="${o.perRow}" style="--n:${o.perRow}"` : '';
+
+    html += `<div class="letter-card"><div class="letter-info"><div class="letter-demo">`;
+    variants.forEach(v => ctx.styles.forEach(st => {
+      html += `<div class="hw-cell" style="margin-bottom:6px;">${guideSvg()}` +
+        `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(v)}</span></div></div>`;
+    }));
+    html += `</div><div class="letter-details">`;
+    html += `<div class="letter-name">${esc(ch.toUpperCase())} <small>letter 字母 ${esc(ch)}</small></div>`;
+    html += `<div class="letter-desc">${phonetic(ch)}</div>`;
+    html += `<div class="letter-actions">`;
+    html += `<button class="btn-ghost" onclick="speak('${esc(ch)}','${ctx.accent}')">🔊 Letter 讀音</button>`;
+    html += `<button class="btn-ghost" onclick="openStroke('${esc(ch)}')">✍️ Show 筆順</button>`;
+    html += `</div></div></div>`;
+
+    // practice cells — per case-variant × per style rows (both modes = 2×2 rows)
+    if (o.practice > 0) {
+      variants.forEach(v => ctx.styles.forEach(st => {
+        html += `<div class="practice-row"${perRowAttr}>`;
+        for (let r = 0; r < o.practice; r++) {
+          html += practiceCellHtml(v, st, { wrapCls: 'hw-cell practice-cell', guide: o.guide, slice: r % 3 });
+        }
+        html += `</div>`;
+      }));
+    }
+    html += `</div>`;
+  });
+  return html;
+}
+
+// 詞語行／句子行係同一結構，分別只在塊 class、行高、字級比例、layer class
+// （原本兩段近乎逐行重複 = Duplicated Code）。cfg = { text, note, blockCls, fontScale, wrapStyle, layerCls, layerStyle }
+function lineBlockHtml(o, ctx, cfg) {
+  const fontPx = (SIZE_PX[o.size] || 96) * 0.64 * cfg.fontScale;
+  const chunks = splitToFitLine(cfg.text, fontPx, ctx.families, lineFitCapacity());
+  const wrapStyle = cfg.wrapStyle || '';
+  const layerCls = cfg.layerCls ? ' ' + cfg.layerCls : '';
+  const layerStyle = cfg.layerStyle || '';
+  const arg = jsArg(cfg.text);
+
+  let html = `<div class="word-block${cfg.blockCls ? ' ' + cfg.blockCls : ''}">`;
+  html += `<div class="word-info"><span class="word-name">${esc(cfg.text)}${cfg.note || ''}</span>`;
+  html += ` <button class="btn-ghost" onclick="speak('${arg}','${ctx.accent}')">🔊</button>`;
+  html += ` <button class="btn-ghost" onclick="showStrokes('${arg}')">✍️ Show 筆順</button>`;
+  html += `</div>`;
+
+  // 示範行（每 style × 每 chunk 一行）
+  ctx.styles.forEach(st => chunks.forEach(ch => {
+    html += `<div class="word-line"${wrapStyle ? ` style="${wrapStyle}"` : ''}>${guideSvg()}` +
+      `<div class="glyph-layer${layerCls}"${layerStyle ? ` style="${layerStyle}"` : ''}>` +
+      `<span class="demo-glyph ${st}">${esc(ch)}</span></div></div>`;
+  }));
+
+  // 練習行 — 循環 style × chunk
+  const pairs = [];
+  ctx.styles.forEach(st => chunks.forEach(ch => pairs.push({ st, ch })));
+  for (let r = 0; r < o.practice; r++) {
+    const pr = pairs[r % pairs.length];
+    html += practiceCellHtml(pr.ch, pr.st, { wrapStyle, layerCls: cfg.layerCls, layerStyle, guide: o.guide, slice: r % 3 });
+  }
+  return html + `</div>`;
+}
+
+function wordSectionHtml(o, ctx) {
+  if (!currentWords.length) return '';
+  let html = `<div class="ws-section-title">Words <span class="en-hint">詞語練習</span></div>`;
+  currentWords.forEach(w => {
+    html += lineBlockHtml(o, ctx, { text: w, note: ` <small>${w.length} letters</small>`, fontScale: 0.75 });
+  });
+  return html;
+}
+
+function sentenceSectionHtml(o, ctx) {
+  if (!currentSentences.length) return '';
+  let html = `<div class="ws-section-title">Sentences <span class="en-hint">句子練習</span></div>`;
+  currentSentences.forEach(s => {
+    html += lineBlockHtml(o, ctx, {
+      text: s, blockCls: 'sentence-block', fontScale: 0.5,
+      wrapStyle: 'height:calc(var(--cell-practice) * 0.5);',
+      layerCls: 'sentence-glyph', layerStyle: 'bottom:0;'
+    });
+  });
+  return html;
+}
+
+// 螢幕／列印格大小（screen px 同 print cm 各自一組 CSS var）
+function applyCellSizes(ws, o) {
   const size = SIZE_PX[o.size] || 96;
   ws.style.setProperty('--cell-practice', size + 'px');
   ws.style.setProperty('--cell-font', `calc(${size}px * 0.64)`);
-
-  // print sizing (cm)
   let ps;
   if (o.printSize && o.printSize !== 'auto') {
     ps = o.printSize;
@@ -1000,17 +1094,25 @@ function renderWorksheet() {
   ws.style.setProperty('--print-cell-practice', ps);
   ws.style.setProperty('--print-cell-font', `calc(${ps} * 0.64)`);
   ws.style.setProperty('--print-glyph-bottom', '15%');
+}
 
-  // guide class
-  ws.classList.remove('guide-dashed', 'guide-blank', 'guide-caoni', 'guide-caoni-color');
-  CAONI_ACTIVE = (o.guideStyle === 'caoni' || o.guideStyle === 'caoni-color');
-  CAONI_IMG = (o.guideStyle === 'caoni');
-  if (o.guideStyle === 'dashed') ws.classList.add('guide-dashed');
-  else if (o.guideStyle === 'caoni') ws.classList.add('guide-caoni');
-  else if (o.guideStyle === 'caoni-color') ws.classList.add('guide-caoni', 'guide-caoni-color');
-  else if (o.guideStyle === 'blank') ws.classList.add('guide-blank');
+// 格線樣式：一個表 = 單一真相（加新樣式只改呢度 + CSS，唔使再改 5 個地方）
+const GUIDE_STYLES = {
+  standard:      { cls: [],                                             mode: '' },
+  caoni:         { cls: ['guide-caoni'],                                mode: 'img' },
+  'caoni-color': { cls: ['guide-caoni', 'guide-caoni-color'],           mode: 'color' },
+  dashed:        { cls: ['guide-dashed'],                               mode: '' },
+  blank:         { cls: ['guide-blank'],                                mode: '' }
+};
+function applyGuideStyle(ws, o) {
+  Object.values(GUIDE_STYLES).forEach(s => s.cls.forEach(c => ws.classList.remove(c)));
+  const st = GUIDE_STYLES[o.guideStyle] || GUIDE_STYLES.standard;
+  st.cls.forEach(c => ws.classList.add(c));
+  CAONI_ACTIVE = !!st.mode;
+  CAONI_IMG = st.mode === 'img';
+}
 
-  // header
+function applyHeader(o) {
   document.getElementById('wsTitle').textContent = o.title;
   const wsHeader = document.querySelector('#worksheet .ws-header');
   if (wsHeader) wsHeader.style.display = o.showHeader ? '' : 'none';
@@ -1018,139 +1120,35 @@ function renderWorksheet() {
   if (o.name) metaHtml += `<span>Name: ${esc(o.name)}</span>`;
   metaHtml += `<span>Date: ${todayStr()}</span>`;
   document.getElementById('wsMeta').innerHTML = metaHtml;
+}
 
-  const usePrint = o.style === 'print' || o.style === 'both';
-  const useCursive = o.style === 'cursive' || o.style === 'both';
-  const showUpper = o.case_ === 'both' || o.case_ === 'upper';
-  const showLower = o.case_ === 'both' || o.case_ === 'lower';
+function renderWorksheet() {
+  const o = currentOptions;
+  const ws = document.getElementById('worksheet');
+  const content = document.getElementById('wsContent');
 
-  let html = '';
+  // 螢幕/列印格大小：統一 0.64 比例，基線間距先會恆定；Andika vs Playwrite 嘅
+  // metric 差異由 .glyph-layer span.print/.cursive 嘅 margin-bottom 修正。
+  applyCellSizes(ws, o);
+  applyGuideStyle(ws, o);
+  applyHeader(o);
 
-  // ===== LETTER SECTION =====
-  if (currentLetters.length) {
-    html += `<div class="ws-section-title">Letters <span class="en-hint">字母練習</span></div>`;
-    const unique = [...new Set(currentLetters)];
-    unique.forEach(ch => {
-      const variants = [];
-      if (showUpper) variants.push({ text: ch.toUpperCase(), label: 'Uppercase' });
-      if (showLower) variants.push({ text: ch, label: 'Lowercase' });
-      const styles = [];
-      if (usePrint) styles.push('print');
-      if (useCursive) styles.push('cursive');
+  const ctx = {
+    accent: document.getElementById('optAccent').value || 'us',
+    styles: [],
+    families: [],
+    showUpper: o.case_ === 'both' || o.case_ === 'upper',
+    showLower: o.case_ === 'both' || o.case_ === 'lower'
+  };
+  if (o.style === 'print' || o.style === 'both') { ctx.styles.push('print'); ctx.families.push('Andika'); }
+  if (o.style === 'cursive' || o.style === 'both') { ctx.styles.push('cursive'); ctx.families.push('Playwrite'); }
 
-      html += `<div class="letter-card">`;
-      html += `<div class="letter-info">`;
-      html += `<div class="letter-demo">`;
-      // demo glyphs (both styles stacked)
-      variants.forEach(v => {
-        styles.forEach(st => {
-          html += `<div class="hw-cell" style="margin-bottom:6px;">${guideSvg()}` +
-            `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(v.text)}</span></div></div>`;
-        });
-      });
-      html += `</div>`;
-      html += `<div class="letter-details">`;
-      html += `<div class="letter-name">${esc(ch.toUpperCase())} <small>letter 字母 ${esc(ch)}</small></div>`;
-      html += `<div class="letter-desc">${phonetic(ch)}</div>`;
-      html += `<div class="letter-actions">`;
-      html += `<button class="btn-ghost" onclick="speak('${esc(ch)}','${accent}')">🔊 Letter 讀音</button>`;
-      html += `<button class="btn-ghost" onclick="openStroke('${esc(ch)}')">✍️ Show 筆順</button>`;
-      html += `</div></div></div>`;
-
-      // practice cells — per case-variant × per style rows (both modes = 2×2 rows)
-      if (o.practice > 0) {
-        variants.forEach(v => {
-          styles.forEach(st => {
-            const perRowAttr = o.perRow !== 'auto' ? ` data-perrow="${o.perRow}" style="--n:${o.perRow}"` : '';
-            html += `<div class="practice-row"${perRowAttr}>`;
-            for (let r = 0; r < o.practice; r++) {
-              html += practiceCellHtml(v.text, st, { wrapCls: 'hw-cell practice-cell', guide: o.guide, slice: r % 3 });
-            }
-            html += `</div>`;
-          });
-        });
-      }
-      html += `</div>`;
-    });
-  }
-
-  // ===== WORD SECTION =====
-  if (currentWords.length) {
-    html += `<div class="ws-section-title">Words <span class="en-hint">詞語練習</span></div>`;
-    currentWords.forEach(w => {
-      html += `<div class="word-block">`;
-      html += `<div class="word-info">`;
-      html += `<span class="word-name">${esc(w)} <small>${w.length} letters</small></span>`;
-      html += ` <button class="btn-ghost" onclick="speak('${esc(w)}','${accent}')">🔊</button>`;
-      html += ` <button class="btn-ghost" onclick="showStrokes('${esc(w).replace(/'/g,"\\'")}')">✍️ Show 筆順</button>`;
-      html += `</div>`;
-      // 一行放唔落就斷去下一行（超長字／長句）；只用實際用到嘅字體量度
-      const wFams = [];
-      if (usePrint) wFams.push('Andika');
-      if (useCursive) wFams.push('Playwrite');
-      const wChunks = splitToFitLine(w, (SIZE_PX[o.size] || 96) * 0.64 * 0.75, wFams, lineFitCapacity());
-      // demo line
-      stylesLoop(usePrint, useCursive, st => {
-        wChunks.forEach(ch => {
-          html += `<div class="word-line">${guideSvg()}` +
-            `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(ch)}</span></div></div>`;
-        });
-      });
-      // practice lines — cycle through style × chunk, repeat o.practice times total
-      const prStyles = [];
-      if (usePrint) prStyles.push('print');
-      if (useCursive) prStyles.push('cursive');
-      const wPairs = [];
-      prStyles.forEach(st => wChunks.forEach(ch => wPairs.push({ st, ch })));
-      for (let r = 0; r < o.practice; r++) {
-        const pr = wPairs[r % wPairs.length];
-        html += practiceCellHtml(pr.ch, pr.st, { guide: o.guide, slice: r % 3 });
-      }
-      html += `</div>`;
-    });
-  }
-
-  // ===== SENTENCE SECTION =====
-  if (currentSentences.length) {
-    html += `<div class="ws-section-title">Sentences <span class="en-hint">句子練習</span></div>`;
-    currentSentences.forEach(s => {
-      html += `<div class="word-block sentence-block">`;
-      html += `<div class="word-info">`;
-      html += `<span class="word-name">${esc(s)}</span>`;
-      html += ` <button class="btn-ghost" onclick="speak('${esc(s).replace(/'/g,"\\'")}','${accent}')">🔊</button>`;
-      html += ` <button class="btn-ghost" onclick="showStrokes('${esc(s).replace(/'/g,"\\'")}')">✍️ Show 筆順</button>`;
-      html += `</div>`;
-      const sFams = [];
-      if (usePrint) sFams.push('Andika');
-      if (useCursive) sFams.push('Playwrite');
-      const sChunks = splitToFitLine(s, (SIZE_PX[o.size] || 96) * 0.64 * 0.5, sFams, lineFitCapacity());
-      stylesLoop(usePrint, useCursive, st => {
-        sChunks.forEach(ch => {
-          html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
-            `<div class="glyph-layer sentence-glyph" style="bottom:0;"><span class="demo-glyph ${st}">${esc(ch)}</span></div></div>`;
-        });
-      });
-      const prStyles2 = [];
-      if (usePrint) prStyles2.push('print');
-      if (useCursive) prStyles2.push('cursive');
-      const sPairs = [];
-      prStyles2.forEach(st => sChunks.forEach(ch => sPairs.push({ st, ch })));
-      for (let r = 0; r < o.practice; r++) {
-        const pr = sPairs[r % sPairs.length];
-        html += practiceCellHtml(pr.ch, pr.st, {
-          wrapStyle: 'height:calc(var(--cell-practice) * 0.5);',
-          layerCls: 'sentence-glyph', layerStyle: 'bottom:0;',
-          guide: o.guide, slice: r % 3
-        });
-      }
-      html += `</div>`;
-    });
-  }
-
+  let html = letterSectionHtml(o, ctx) + wordSectionHtml(o, ctx) + sentenceSectionHtml(o, ctx);
   if (!html) html = '<p style="text-align:center;color:#889;padding:30px;">Nothing to practice — type some English. 未有內容 —— 請輸入英文。</p>';
   content.innerHTML = html;
   fitCaoniPatterns(content);   // 天草泥：量度實際長闊比再鋪圖（word/sentence 行唔會拉爆）
 }
+
 
 function stylesLoop(usePrint, useCursive, fn) {
   if (usePrint) fn('print');
@@ -1243,7 +1241,7 @@ function openStroke(ch, navList) {
 
     // animate each box
     if (v.paths && v.paths.length) {
-      const timer = animateSvgBox(svg, note, box, vi);
+      const timer = animateSvgBox(svg, note, vi);
       if (timer) animTimers.push(timer);
     }
   });
@@ -1414,7 +1412,7 @@ function placeNumLabels(svg) {
   });
 }
 
-function animateSvgBox(svg, note, box, vi) {
+function animateSvgBox(svg, note, vi) {
   const paths = svg._sbPaths || [];
   if (!paths.length) return null;
   const DURATION = 620;

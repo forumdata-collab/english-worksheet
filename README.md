@@ -58,6 +58,12 @@ python3 -m http.server 8080
 
 Or open `index.html` directly in a browser.
 
+## Code health (2026-09-19 audit)
+
+- **Regression suite, 35 checks** (headless chromium + real `change` events, results read via `--dump-dom`): all four sections × case × style · 5 guide styles + Sky·Grass·Mud tile aspect · `practice=0` · long-sentence / no-space-word wrapping · cells-per-row font scaling · dictation mode · stroke modal · localStorage · horizontal overflow · JS errors. Print layout is tested separately by forcing the `@media print` rules on at A4 width: no overflow.
+- **Fixed smells**: Divergent Change + Long Method (`renderWorksheet` 175 lines → orchestrator + 4 section builders) · Duplicated Code (word/sentence rows → `lineBlockHtml`) · Speculative Generality (unused params) · Dead Code (CSS left over from the removed "Advanced" panel).
+- **Accepted by design**: single `index.html`, no build step (Large Class is the deliberate trade-off); `splitToFitLine()` 4 params; cross-file duplication with chineseword — the two sites are separate deployments, and shared helpers are deliberately small (`jsArg`, guide SVG).
+
 ## License
 
 MIT. Fonts: Andika & Playwrite are licensed under the SIL Open Font License 1.1.

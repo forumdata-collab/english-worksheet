@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-09-19 — v1.6
+
+### Fixed
+- **Cells-per-row 模式下字級冇跟格仔**：perRow=4 格仔 216px 但字級仍固定 61.44px（比例 0.285，應為 0.64），基線亦對唔上四線格。改用 container query（`--cell-font: 64cqw`），螢幕同列印都跟格仔比例（實測 0.62–0.63）。
+
+### Changed（Code Smells 修正）
+- **Divergent Change + Long Method**：`renderWorksheet()` 175 行（包辦 letters / words / sentences + header + 格大小 + 格線樣式）拆成 orchestrator（~25 行）+ `letterSectionHtml()` / `wordSectionHtml()` / `sentenceSectionHtml()` + `applyCellSizes()` / `applyGuideStyle()` / `applyHeader()`。
+- **Duplicated Code**：詞語行同句子行原本逐行近乎重複（只差塊 class、行高、字級比例、layer class）→ 合併為 `lineBlockHtml(o, ctx, cfg)`，兩邊各一個薄 wrapper。
+- **Speculative Generality**：移除 `animateSvgBox()` 未用嘅 `box` 參數；清走「Advanced」摺疊層移除後遺留嘅 `.advance-collapse` / `.collapse-wrap` 死 CSS。
+- `jsArg()` 統一處理 inline onclick 嘅字串轉義（原本 `.replace(/'/g, …)` 散落 4 處）。
+
+### Notes
+- 回歸測試套件 **35 項**（letters/words/copybook/sentences × case × style、5 款格線 + 天草泥比例、practice=0、長句／無空格長字斷行、perRow 字級、默書版、筆順 modal、localStorage、溢出、JS error）。全綠。
+- 列印版面測試（`@media print` → `@media all` @794px）：無溢出，列印格 var 2.2cm。
+
 ## 2026-09-19 — v1.5
 
 - **Options apply immediately**: changing any control in the options panel now regenerates the worksheet itself (250ms debounce, `bindAutoRegenerate()`) instead of waiting for another **Generate** click — the same change was made on chineseword after a "the option has no effect" report. It only runs once a worksheet exists and the input is non-empty.
