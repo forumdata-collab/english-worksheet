@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-19 — v1.5
+
+- **Options apply immediately**: changing any control in the options panel now regenerates the worksheet itself (250ms debounce, `bindAutoRegenerate()`) instead of waiting for another **Generate** click — the same change was made on chineseword after a "the option has no effect" report. It only runs once a worksheet exists and the input is non-empty.
+
 ## 2026-09-19 — v1.4
 
 - **Fixed — long sentences / words did not wrap and spilled out of the guide box**: the word/sentence glyphs are `white-space: nowrap` at a fixed font size, so any text wider than the line (e.g. a full sentence) overflowed instead of continuing on the next row — measured 259px past the line edge for the glyph layer, 349px past the container for the whole block. Text is now measured with a canvas at the **font actually in use** and split at word boundaries onto as many rows as needed (practice rows cycle through the chunks in order); a single over-long word with no spaces falls back to character-level breaks. The fit is computed from the live line width with a margin covering the narrower A4 print layout, and recomputed after `document.fonts.ready`.

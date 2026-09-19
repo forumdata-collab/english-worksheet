@@ -638,6 +638,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // sync quick-style buttons with current select values
   syncQuickBtns();
   generate();
+  // 選項一改就自動重新產生（同 chineseword 一致；原本要再撳 Generate 才生效）
+  bindAutoRegenerate();
   // Eager font warm-up — same lesson as chineseword: swap+preload so the
   // handwriting fonts render immediately instead of falling back to system
   // fonts on first paint (esp. before print/PDF).
@@ -1153,6 +1155,24 @@ function renderWorksheet() {
 function stylesLoop(usePrint, useCursive, fn) {
   if (usePrint) fn('print');
   if (useCursive) fn('cursive');
+}
+
+// 選項面板內任何控件一改，就自動重新產生工作表（250ms debounce）。
+// 以前改完選項版面唔會更新，用戶會以為「選項選了也不生效」。
+function bindAutoRegenerate() {
+  const panel = document.getElementById('optionsPanel');
+  if (!panel) return;
+  let timer = null;
+  const run = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const inp = document.getElementById('inputText');
+      if (!inp || !inp.value.trim()) return;
+      try { generate(); } catch (e) { /* non-fatal */ }
+    }, 250);
+  };
+  panel.addEventListener('change', run);
+  panel.addEventListener('input', run);
 }
 
 // One practice-cell builder shared by Letters/Words/Sentences (guide-glyph overlay).
