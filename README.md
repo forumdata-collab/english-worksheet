@@ -15,6 +15,7 @@ Handwriting worksheet generator for English learners — **print & cursive**, **
   - Or both, side by side
 - **✍️ Show** — animated stroke guidance using **mask-reveal animation**: each letter's handwriting strokes are rendered from the font's own glyph skeletons, so the animation matches the reference letterform exactly (103 letters, ≥99.8% coverage)
 - **Four-line handwriting grid** (top, dashed midline, baseline, descender) — inline SVG so it prints reliably
+- **Sky·Grass·Mud guide** (天草泥) — optional three-band background drawn from the bundled artwork (`caoni-bg.jpg`, sliced 3× across a practice row), or a colours-only variant. Band boundaries follow the **font metrics** (sky ends at the x-height line, mud starts at the baseline), so capitals sit on the mud, lower-case bodies stay in the grass and only g/y/q/p tails reach into the mud
 - **Light tracing guides** (描紅) in practice cells
 - **Speech**: US or UK English pronunciation per letter/word/sentence
 - **A4 print / PDF export** with print-size options (1.5–2.6cm)
@@ -34,6 +35,7 @@ Handwriting worksheet generator for English learners — **print & cursive**, **
 ```
 english-worksheet/
 ├── index.html          # Single-page app (UI + logic + styles)
+├── caoni-bg.jpg        # Sky·grass·mud artwork (sliced 3× for the 天草泥 guide)
 ├── strokes_font.js     # Generated letter stroke paths (mask-reveal animation)
 ├── fonts/              # Self-hosted Andika + Playwrite woff2
 ├── tools/              # Stroke-generation pipeline (Python)

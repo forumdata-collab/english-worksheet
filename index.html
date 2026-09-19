@@ -884,7 +884,7 @@ function caoniPattern(slice) {
 function guideSvg(slice) {
   // 4-line handwriting grid: top, dashed midline, baseline, bottom
   // viewBox 0-100: top 5, mid 38, base 65, bottom 96
-  // caoni 模式：中線移去真實 x-height（32.4），同天空/草色帶界線疊埋一齊
+  // caoni 模式：中線移去真實 x-height（31.5），同天空/草色帶界線疊埋一齊
   const midY = CAONI_ACTIVE ? CAONI_XH : 38;
   return `<svg class="cell-guides" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">` +
     (CAONI_ACTIVE ? caoniPattern(slice) : '') +
