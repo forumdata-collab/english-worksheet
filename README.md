@@ -17,6 +17,7 @@ Handwriting worksheet generator for English learners — **print & cursive**, **
 - **Four-line handwriting grid** (top, dashed midline, baseline, descender) — inline SVG so it prints reliably
 - **Sky·Grass·Mud guide** (天草泥) — optional three-band background drawn from the bundled artwork (`caoni-bg.jpg`), or a colours-only variant. Band boundaries follow the **font metrics** (sky ends at the x-height line, mud starts at the baseline), so capitals sit on the mud, lower-case bodies stay in the grass and only g/y/q/p tails reach into the mud. On a long word/sentence line the artwork stays at the same scale as the letter cells and **tiles horizontally** (mirror-alternating) instead of stretching
 - **Light tracing guides** (描紅) in practice cells
+- **Long text wraps**: word/sentence practice lines are measured at render time and split at word boundaries onto as many guide rows as needed (an over-long single word breaks character-wise), so nothing spills past the grid
 - **Speech**: US or UK English pronunciation per letter/word/sentence
 - **A4 print / PDF export** with print-size options (1.5–2.6cm)
 - **Dictation mode** (hide guides, readings as cues)

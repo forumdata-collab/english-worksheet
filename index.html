@@ -932,6 +932,48 @@ function guideSvg(slice) {
     `</svg>`;
 }
 
+// ===== 長字／長句自動斷行 =====
+// `.word-line .glyph-layer span` 係 `white-space: nowrap` + 固定字級 → 超長句子會爆出格
+// （量到 word-line scrollWidth 1159 vs clientWidth 900 = 右邊凸 259px）。呢度用 canvas 量度
+// 實際字體闊度，放唔落就斷去下一行（每行一條 .word-line，示範行同練習行都跟）。
+function lineFitCapacity() {
+  const el = document.getElementById('wsContent');
+  const inner = (el && el.clientWidth ? el.clientWidth : 904) - 8;   // .word-line 有 2px 邊框
+  // 0.88：列印版面（A4 @page 12mm → 186mm）比螢幕 960px 窄，字級比例亦唔同，留安全邊際
+  return Math.max(160, Math.round(inner * 0.88));
+}
+
+function splitToFitLine(text, fontPx, families, maxPx) {
+  text = String(text == null ? '' : text);
+  const ctx = document.createElement('canvas').getContext('2d');
+  const widest = s => {
+    let m = 0;
+    families.forEach(f => { ctx.font = fontPx + 'px ' + f; m = Math.max(m, ctx.measureText(s).width); });
+    return m;
+  };
+  if (widest(text) <= maxPx) return [text];
+  const words = text.split(/\s+/).filter(Boolean);
+  const out = [];
+  let cur = '';
+  const flush = () => { if (cur) { out.push(cur); cur = ''; } };
+  words.forEach(w => {
+    if (widest(w) > maxPx) {              // 單詞本身過長（無空格可斷）→ 逐字切
+      flush();
+      let piece = '';
+      for (const ch of w) {
+        if (piece && widest(piece + ch) > maxPx) { out.push(piece); piece = ''; }
+        piece += ch;
+      }
+      cur = piece;
+      return;
+    }
+    const cand = cur ? cur + ' ' + w : w;
+    if (widest(cand) > maxPx) { flush(); cur = w; } else { cur = cand; }
+  });
+  flush();
+  return out.length ? out : [text];
+}
+
 function renderWorksheet() {
   const o = currentOptions;
   const accent = document.getElementById('optAccent').value || 'us';
@@ -1040,18 +1082,27 @@ function renderWorksheet() {
       html += ` <button class="btn-ghost" onclick="speak('${esc(w)}','${accent}')">🔊</button>`;
       html += ` <button class="btn-ghost" onclick="showStrokes('${esc(w).replace(/'/g,"\\'")}')">✍️ Show 筆順</button>`;
       html += `</div>`;
+      // 一行放唔落就斷去下一行（超長字／長句）；只用實際用到嘅字體量度
+      const wFams = [];
+      if (usePrint) wFams.push('Andika');
+      if (useCursive) wFams.push('Playwrite');
+      const wChunks = splitToFitLine(w, (SIZE_PX[o.size] || 96) * 0.64 * 0.75, wFams, lineFitCapacity());
       // demo line
       stylesLoop(usePrint, useCursive, st => {
-        html += `<div class="word-line">${guideSvg()}` +
-          `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(w)}</span></div></div>`;
+        wChunks.forEach(ch => {
+          html += `<div class="word-line">${guideSvg()}` +
+            `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(ch)}</span></div></div>`;
+        });
       });
-      // practice lines — cycle through selected styles, repeat o.practice times total
+      // practice lines — cycle through style × chunk, repeat o.practice times total
       const prStyles = [];
       if (usePrint) prStyles.push('print');
       if (useCursive) prStyles.push('cursive');
+      const wPairs = [];
+      prStyles.forEach(st => wChunks.forEach(ch => wPairs.push({ st, ch })));
       for (let r = 0; r < o.practice; r++) {
-        const st = prStyles[r % prStyles.length];
-        html += practiceCellHtml(w, st, { guide: o.guide, slice: r % 3 });
+        const pr = wPairs[r % wPairs.length];
+        html += practiceCellHtml(pr.ch, pr.st, { guide: o.guide, slice: r % 3 });
       }
       html += `</div>`;
     });
@@ -1067,16 +1118,24 @@ function renderWorksheet() {
       html += ` <button class="btn-ghost" onclick="speak('${esc(s).replace(/'/g,"\\'")}','${accent}')">🔊</button>`;
       html += ` <button class="btn-ghost" onclick="showStrokes('${esc(s).replace(/'/g,"\\'")}')">✍️ Show 筆順</button>`;
       html += `</div>`;
+      const sFams = [];
+      if (usePrint) sFams.push('Andika');
+      if (useCursive) sFams.push('Playwrite');
+      const sChunks = splitToFitLine(s, (SIZE_PX[o.size] || 96) * 0.64 * 0.5, sFams, lineFitCapacity());
       stylesLoop(usePrint, useCursive, st => {
-        html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
-          `<div class="glyph-layer sentence-glyph" style="bottom:0;"><span class="demo-glyph ${st}">${esc(s)}</span></div></div>`;
+        sChunks.forEach(ch => {
+          html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
+            `<div class="glyph-layer sentence-glyph" style="bottom:0;"><span class="demo-glyph ${st}">${esc(ch)}</span></div></div>`;
+        });
       });
       const prStyles2 = [];
       if (usePrint) prStyles2.push('print');
       if (useCursive) prStyles2.push('cursive');
+      const sPairs = [];
+      prStyles2.forEach(st => sChunks.forEach(ch => sPairs.push({ st, ch })));
       for (let r = 0; r < o.practice; r++) {
-        const st = prStyles2[r % prStyles2.length];
-        html += practiceCellHtml(s, st, {
+        const pr = sPairs[r % sPairs.length];
+        html += practiceCellHtml(pr.ch, pr.st, {
           wrapStyle: 'height:calc(var(--cell-practice) * 0.5);',
           layerCls: 'sentence-glyph', layerStyle: 'bottom:0;',
           guide: o.guide, slice: r % 3

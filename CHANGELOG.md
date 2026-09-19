@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-09-19 — v1.4
+
+- **Fixed — long sentences / words did not wrap and spilled out of the guide box**: the word/sentence glyphs are `white-space: nowrap` at a fixed font size, so any text wider than the line (e.g. a full sentence) overflowed instead of continuing on the next row — measured 259px past the line edge for the glyph layer, 349px past the container for the whole block. Text is now measured with a canvas at the **font actually in use** and split at word boundaries onto as many rows as needed (practice rows cycle through the chunks in order); a single over-long word with no spaces falls back to character-level breaks. The fit is computed from the live line width with a margin covering the narrower A4 print layout, and recomputed after `document.fonts.ready`.
+
 ## 2026-09-19 — v1.3
 
 - **Fixed — Sky·Grass·Mud picture distorted on word/sentence lines**: the guide SVG uses `preserveAspectRatio="none"` so one viewBox unit is wider than it is tall on a long line, which stretched the artwork horizontally (up to ~12× on a full-width word line). The artwork is now drawn at a **fixed 3:1 pixel aspect** (same scale as the square letter cells) and **tiled horizontally** — alternate tiles mirrored so seams read as part of the picture — which keeps every mode in scale. Tiles are re-fitted on resize, before print and after print.
