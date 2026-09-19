@@ -400,164 +400,161 @@ body {
 
 <!-- INPUT -->
 <div class="input-section screen-only">
-  <label for="inputText">✏️ Type English words or a sentence</label>
+  <label for="inputText">✏️ Type English words or a sentence 輸入英文字或句子</label>
   <textarea id="inputText" placeholder="e.g. The quick brown fox jumps over the lazy dog.">The quick brown fox jumps over the lazy dog.</textarea>
   <details class="sample-collapse">
-    <summary>🎲 Samples</summary>
+    <summary>🎲 Samples 範例</summary>
     <div class="sample-list">
       <button onclick="setInput('abcdefghijklmnopqrstuvwxyz')">a–z</button>
       <button onclick="setInput('ABCDEFGHIJKLMNOPQRSTUVWXYZ')">A–Z</button>
       <button onclick="setInput('hello world')">hello world</button>
-      <button onclick="setInput('The quick brown fox jumps over the lazy dog.')">Full alphabet sentence</button>
-      <button onclick="setInput('Happy birthday! I love you.')">Phrases</button>
-      <button onclick="setInput('My name is Alex. I am eight years old.')">Sentences</button>
+      <button onclick="setInput('The quick brown fox jumps over the lazy dog.')">Full alphabet 全字母句</button>
+      <button onclick="setInput('Happy birthday! I love you.')">Phrases 短句</button>
+      <button onclick="setInput('My name is Alex. I am eight years old.')">Sentences 句子</button>
     </div>
   </details>
   <div class="quick-style">
-    <span class="qs-label">Style:</span>
+    <span class="qs-label">Style 字體:</span>
     <button class="qs-btn" data-style="print" onclick="setStyle('print')">✍️ Print 正寫</button>
     <button class="qs-btn" data-style="cursive" onclick="setStyle('cursive')">🖋️ Cursive 草寫</button>
-    <button class="qs-btn" data-style="both" onclick="setStyle('both')">✍️+🖋️ Both</button>
+    <button class="qs-btn" data-style="both" onclick="setStyle('both')">✍️+🖋️ Both 兩者</button>
     <span class="qs-sep"></span>
-    <span class="qs-label">Case:</span>
+    <span class="qs-label">Case 大小寫:</span>
     <button class="qs-btn" data-case="both" onclick="setCase('both')">Aa</button>
     <button class="qs-btn" data-case="upper" onclick="setCase('upper')">A</button>
     <button class="qs-btn" data-case="lower" onclick="setCase('lower')">a</button>
   </div>
   <div class="quick-style qs-section">
-    <span class="qs-label">Section:</span>
-    <button class="qs-btn section-btn" data-section="letters" onclick="setSection('letters')">🔤 Letters</button>
-    <button class="qs-btn section-btn" data-section="words" onclick="setSection('words')">📝 Words</button>
-    <button class="qs-btn section-btn" data-section="copybook" onclick="setSection('copybook')">📖 Copybook <small style="font-weight:400">單字+句子</small></button>
-    <button class="qs-btn section-btn" data-section="sentences" onclick="setSection('sentences')">✒️ 淨句子</button>
+    <span class="qs-label">Section 範圍:</span>
+    <button class="qs-btn section-btn" data-section="letters" onclick="setSection('letters')">🔤 Letters 字母</button>
+    <button class="qs-btn section-btn" data-section="words" onclick="setSection('words')">📝 Words 詞語</button>
+    <button class="qs-btn section-btn" data-section="copybook" onclick="setSection('copybook')">📖 Copybook 單字＋句子</button>
+    <button class="qs-btn section-btn" data-section="sentences" onclick="setSection('sentences')">✒️ Sentences 淨句子</button>
   </div>
   <div class="actions">
-    <button class="btn-primary" onclick="generate()">📝 Generate Worksheet</button>
-    <button class="btn-ghost" onclick="toggleOptions()">⚙️ Options</button>
-    <button class="btn-ghost" onclick="readAllText('us')">🔊 Read All</button>
+    <button class="btn-primary" onclick="generate()">📝 Generate 產生工作紙</button>
+    <button class="btn-ghost" onclick="toggleOptions()">⚙️ Options 選項</button>
+    <button class="btn-ghost" onclick="readAllText('us')">🔊 Read All 全部朗讀</button>
   </div>
 </div>
 
 <!-- OPTIONS -->
 <div class="options" id="optionsPanel">
   <div class="opt-section">
-    <h3>📐 Layout</h3>
+    <h3>📐 Layout 版面</h3>
     <div class="opt-grid">
       <div class="opt-group">
-        <label>Practice rows (per item)</label>
+        <label>Practice rows 練習行數（每項）</label>
         <input type="number" id="optPractice" value="4" min="0" max="20">
       </div>
       <div class="opt-group">
-        <label>Guide style</label>
+        <label>Guide style 格線樣式</label>
         <select id="optGuideStyle">
-          <option value="standard" selected>Standard (4-line)</option>
-          <option value="caoni">Sky·Grass·Mud (picture)</option>
-          <option value="caoni-color">Sky·Grass·Mud (colours only)</option>
-          <option value="dashed">Dashed guides</option>
-          <option value="blank">Blank</option>
+          <option value="standard" selected>Standard 4-line 標準四線格</option>
+          <option value="caoni">Sky·Grass·Mud 天草泥（圖案）</option>
+          <option value="caoni-color">Sky·Grass·Mud 天草泥（只有顏色）</option>
+          <option value="dashed">Dashed guides 虛線格</option>
+          <option value="blank">Blank 空白格</option>
         </select>
       </div>
       <div class="opt-group">
-        <label>Screen cell size</label>
-        <select id="optSize">
-          <option value="xs">Extra small (56px)</option>
-          <option value="sm">Small (72px)</option>
-          <option value="md" selected>Medium (96px)</option>
-          <option value="lg">Large (128px)</option>
-        </select>
-      </div>
-      <div class="opt-group">
-        <label>Print cell size</label>
-        <select id="optPrintSize">
-          <option value="auto">Follow screen</option>
-          <option value="1.5cm">Small 1.5cm</option>
-          <option value="1.8cm">Medium 1.8cm</option>
-          <option value="2.2cm" selected>Large 2.2cm (standard)</option>
-          <option value="2.6cm">Extra large 2.6cm</option>
-        </select>
-      </div>
-      <div class="opt-group">
-        <label>Cells per row</label>
+        <label>Cells per row 每行格數</label>
         <select id="optPerRow">
-          <option value="auto" selected>Auto</option>
+          <option value="auto" selected>Auto 自動</option>
           <option value="4">4</option>
           <option value="6">6</option>
           <option value="8">8</option>
         </select>
       </div>
+      <div class="opt-group">
+        <label>Screen cell size 螢幕格大小</label>
+        <select id="optSize">
+          <option value="xs">Extra small 特小 (56px)</option>
+          <option value="sm">Small 小 (72px)</option>
+          <option value="md" selected>Medium 中 (96px)</option>
+          <option value="lg">Large 大 (128px)</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <label>Print cell size 印刷格大小</label>
+        <select id="optPrintSize">
+          <option value="auto">Follow screen 跟螢幕</option>
+          <option value="1.5cm">Small 小 (1.5cm)</option>
+          <option value="1.8cm">Medium 中 (1.8cm)</option>
+          <option value="2.2cm" selected>Large 大 (2.2cm 標準)</option>
+          <option value="2.6cm">Extra large 特大 (2.6cm)</option>
+        </select>
+      </div>
     </div>
   </div>
 
   <div class="opt-section">
-    <h3>📝 Content</h3>
+    <h3>📝 Content 內容</h3>
     <div class="opt-grid">
       <div class="opt-group">
-        <label>Style</label>
+        <label>Style 字體</label>
         <select id="optStyle">
-          <option value="print">Print (正寫)</option>
-          <option value="cursive">Cursive (草寫)</option>
-          <option value="both" selected>Both</option>
+          <option value="print">Print 正寫</option>
+          <option value="cursive">Cursive 草寫</option>
+          <option value="both" selected>Both 兩者</option>
         </select>
       </div>
       <div class="opt-group">
-        <label>Case</label>
+        <label>Case 大小寫</label>
         <select id="optCase">
-          <option value="both" selected>Both Aa</option>
-          <option value="upper">Uppercase A</option>
-          <option value="lower">Lowercase a</option>
+          <option value="both" selected>Both Aa 兩者</option>
+          <option value="upper">Uppercase A 大寫</option>
+          <option value="lower">Lowercase a 小寫</option>
         </select>
       </div>
       <div class="opt-group">
-        <label>Section</label>
+        <label>Section 範圍</label>
         <select id="optSection">
-          <option value="letters">Letters only</option>
-          <option value="words">Words only</option>
-          <option value="copybook" selected>Copybook (words + sentences)</option>
-          <option value="sentences">Sentences only</option>
+          <option value="letters">Letters only 只字母</option>
+          <option value="words">Words only 只詞語</option>
+          <option value="copybook" selected>Copybook 單字＋句子</option>
+          <option value="sentences">Sentences only 淨句子</option>
         </select>
       </div>
       <div class="opt-group">
-        <div class="toggle-row"><input type="checkbox" id="optGuide" checked><label for="optGuide">Light tracing guide</label></div>
+        <div class="toggle-row"><input type="checkbox" id="optGuide" checked><label for="optGuide">Light tracing guide 淺色描紅</label></div>
       </div>
       <div class="opt-group">
-        <div class="toggle-row"><input type="checkbox" id="optShowHeader" checked><label for="optShowHeader">Show title &amp; info</label></div>
+        <div class="toggle-row"><input type="checkbox" id="optDedup" checked><label for="optDedup">Deduplicate letters 字母去重</label></div>
       </div>
     </div>
   </div>
 
   <div class="opt-section">
-    <h3>⚙️ Advanced</h3>
-    <details class="advance-collapse">
-      <summary>Advanced (title · name · date · accent · dedupe)</summary>
-      <div class="opt-grid collapse-wrap">
-        <div class="opt-group">
-          <label>Worksheet title</label>
-          <input type="text" id="optTitle" value="English Handwriting Practice" placeholder="Worksheet title">
-        </div>
-        <div class="opt-group">
-          <label>Name</label>
-          <input type="text" id="optName" value="" placeholder="Student name">
-        </div>
-        <div class="opt-group">
-          <label>Accent</label>
-          <select id="optAccent">
-            <option value="us" selected>US English</option>
-            <option value="uk">UK English</option>
-          </select>
-        </div>
-        <div class="opt-group">
-          <div class="toggle-row"><input type="checkbox" id="optDedup" checked><label for="optDedup">Deduplicate letters</label></div>
-        </div>
+    <h3>📄 Page 頁面</h3>
+    <div class="opt-grid">
+      <div class="opt-group">
+        <label>Worksheet title 工作紙標題</label>
+        <input type="text" id="optTitle" value="English Handwriting Practice" placeholder="Worksheet title 工作紙標題">
       </div>
-    </details>
+      <div class="opt-group">
+        <label>Name 姓名</label>
+        <input type="text" id="optName" value="" placeholder="Student name 學生姓名">
+      </div>
+      <div class="opt-group">
+        <label>Accent 口音</label>
+        <select id="optAccent">
+          <option value="us" selected>US English 美式英語</option>
+          <option value="uk">UK English 英式英語</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <div class="toggle-row"><input type="checkbox" id="optShowHeader" checked><label for="optShowHeader">Show title &amp; info 顯示標題資訊</label></div>
+      </div>
+    </div>
   </div>
 </div>
 
 <!-- PRINT BAR -->
 <div class="print-bar no-print" id="printBar">
-  <button class="btn-primary" onclick="printWorksheet()">🖨️ Print / PDF</button>
+  <button class="btn-primary" onclick="printWorksheet()">🖨️ Print / PDF 列印</button>
   <div class="bar-sep"></div>
-  <button class="btn-ghost" onclick="toggleQuizMode()" id="btnQuizMode">✍️ Practice Mode</button>
+  <button class="btn-ghost" onclick="toggleQuizMode()" id="btnQuizMode">✍️ Practice Mode 練習模式</button>
   <span style="font-size:0.8em;color:#889;" id="printHint"></span>
 </div>
 
@@ -580,13 +577,13 @@ body {
 <!-- MODALS -->
 <div class="modal-overlay" id="strokeModal">
   <div class="modal-box wide">
-    <h3 id="strokeModalTitle">Write</h3>
+    <h3 id="strokeModalTitle">Write 筆順示範</h3>
     <div class="stroke-nav no-print">
-      <button class="btn-ghost" onclick="strokePrev()">◀ Prev</button>
+      <button class="btn-ghost" onclick="strokePrev()">◀ Prev 上一個</button>
       <span id="strokeNavPos"></span>
-      <button class="btn-ghost" onclick="strokeNext()">Next ▶</button>
+      <button class="btn-ghost" onclick="strokeNext()">Next 下一個 ▶</button>
       <span style="flex:1"></span>
-      <button class="btn-ghost" onclick="strokeReplay()">↻ Replay</button>
+      <button class="btn-ghost" onclick="strokeReplay()">↻ Replay 重播</button>
     </div>
     <div id="strokeGrid" class="stroke-grid">
       <!-- 4 variant boxes injected by JS -->
@@ -594,7 +591,7 @@ body {
     <div class="stroke-note" id="strokeNote"></div>
     <div id="strokeResult"></div>
     <div class="modal-actions">
-      <button class="btn-ghost" onclick="closeModal('strokeModal')">Close</button>
+      <button class="btn-ghost" onclick="closeModal('strokeModal')">Close 關閉</button>
     </div>
   </div>
 </div>
@@ -804,14 +801,14 @@ function generate() {
   } catch(e) {}
 
   const raw = document.getElementById('inputText').value.trim();
-  if (!raw) { showToast('Please type some English text'); return; }
+  if (!raw) { showToast('Please type some English text 請輸入英文'); return; }
 
   const section = document.getElementById('optSection').value || 'copybook';
 
   // letters only rendered when section includes letters
   if (section === 'letters') {
     const ls = parseLetters(raw);
-    if (!ls.length) { showToast('No letters found — type A–Z'); return; }
+    if (!ls.length) { showToast('No letters found — type A–Z 找不到字母，請輸入 A–Z'); return; }
     const dedup = document.getElementById('optDedup').checked;
     currentLetters = dedup ? [...new Set(ls.map(l => l.toLowerCase()))] : ls.map(l => l.toLowerCase());
     currentWords = [];
@@ -820,7 +817,7 @@ function generate() {
     currentLetters = [];
     currentWords = [];
     currentSentences = parseSentences(raw);
-    if (!currentSentences.length) { showToast('No sentences found'); return; }
+    if (!currentSentences.length) { showToast('No sentences found 找不到句子'); return; }
   } else {
     currentLetters = [];
     currentWords = [...new Set(parseWords(raw))];
@@ -860,10 +857,50 @@ function generate() {
 //                                          g/p 下伸 0.24em → 泥帶 = 65 → 80.4%+ ✓
 //   即：天 = 大楷頂以上嘅空間、草 = 小楷身（x-height 至基線）、泥 = 基線以下（只有 g y q p 尾插入）
 // 原圖切片：<image> 3 倍闊 + 負 x 偏移（一行 3 格 = 原圖左/中/右）。
+// ⚠️ 但 SVG 用 preserveAspectRatio="none"（格線要橫向拉滿），所以一個 unit 嘅 px 大小
+//    橫向係 W/100、縱向係 H/100 —— word/sentence 行係長條形（8:1），張圖就會被橫向拉爆。
+//    解決：圖片 px 比例鎖死 3:1（同字母格一致）→ 每塊圖喺 viewBox 單位嘅闊度 = 300/aspect，
+//    唔夠闊就橫向平鋪（奇數塊鏡射，接縫自然）。aspect=1（正方字母格）時 = 原本 300，一行三格重組原圖 ✓。
 var CAONI_ACTIVE = false;
 var CAONI_IMG = true;
 var CAONI_XH = 31.5;   // 天空/草 界線（= x-height line；print 32.7 / cursive 31.7，取 31.5 令兩種字體嘅小楷身都留喺草區）
 var CAONI_BASE = 65;   // 草/泥 界線（= 基線）
+
+function caoniTiles(slice, aspect) {
+  const wU = Math.max(12, 300 / Math.max(1, aspect));   // 單位：每塊圖嘅闊度（height 永遠 100 = 格高）
+  const start = -100 * (slice || 0);
+  const k0 = Math.floor((0 - start) / wU) - 1;
+  const k1 = Math.ceil((100 - start) / wU) + 1;
+  const w = +wU.toFixed(2);
+  let out = '';
+  for (let k = k0; k <= k1; k++) {
+    const x = +(start + k * wU).toFixed(2);
+    if (((k % 2) + 2) % 2) {   // 奇數塊鏡射 → 平鋪接縫唔會有硬邊
+      out += `<g transform="translate(${+(x + wU).toFixed(2)},0) scale(-1,1)">`
+           + `<image href="caoni-bg.jpg" x="0" y="0" width="${w}" height="100" preserveAspectRatio="none"/></g>`;
+    } else {
+      out += `<image href="caoni-bg.jpg" x="${x}" y="0" width="${w}" height="100" preserveAspectRatio="none"/>`;
+    }
+  }
+  return out;
+}
+
+// 渲染後量度每個格／行嘅實際長闊比，重新鋪圖（screen 同 print 都啱）
+function fitCaoniPatterns(root) {
+  (root || document).querySelectorAll('.caoni-art').forEach(art => {
+    const svg = art.closest('svg');
+    if (!svg) return;
+    const r = svg.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2) return;
+    const aspect = r.width / r.height;
+    const slice = +art.dataset.slice || 0;
+    const key = aspect.toFixed(2) + '|' + slice;
+    if (art.dataset.fit === key) return;   // 已經鋪好同一個比例
+    art.dataset.fit = key;
+    art.innerHTML = caoniTiles(slice, aspect);
+  });
+}
+
 function caoniPattern(slice) {
   const s = slice || 0;
   const xh = CAONI_XH, base = CAONI_BASE;
@@ -875,7 +912,7 @@ function caoniPattern(slice) {
       `</g>`;
   }
   return `<g class="caoni-bg">` +
-    `<image href="caoni-bg.jpg" x="${-100 * s}" y="0" width="300" height="100" preserveAspectRatio="none"/>` +
+    `<g class="caoni-art" data-slice="${s}">${caoniTiles(s, 1)}</g>` +
     `<rect width="100" height="${xh}" fill="#CFE6FA" fill-opacity="0.45"/>` +
     `<rect y="${xh}" width="100" height="${base - xh}" fill="#D9EFCF" fill-opacity="0.45"/>` +
     `<rect y="${base}" width="100" height="${100 - base}" fill="#EFDFC4" fill-opacity="0.45"/>` +
@@ -947,7 +984,7 @@ function renderWorksheet() {
 
   // ===== LETTER SECTION =====
   if (currentLetters.length) {
-    html += `<div class="ws-section-title">Letters <span class="en-hint">single letter practice</span></div>`;
+    html += `<div class="ws-section-title">Letters <span class="en-hint">字母練習</span></div>`;
     const unique = [...new Set(currentLetters)];
     unique.forEach(ch => {
       const variants = [];
@@ -969,11 +1006,11 @@ function renderWorksheet() {
       });
       html += `</div>`;
       html += `<div class="letter-details">`;
-      html += `<div class="letter-name">${esc(ch.toUpperCase())} <small>letter ${esc(ch)}</small></div>`;
+      html += `<div class="letter-name">${esc(ch.toUpperCase())} <small>letter 字母 ${esc(ch)}</small></div>`;
       html += `<div class="letter-desc">${phonetic(ch)}</div>`;
       html += `<div class="letter-actions">`;
-      html += `<button class="btn-ghost" onclick="speak('${esc(ch)}','${accent}')">🔊 Letter</button>`;
-      html += `<button class="btn-ghost" onclick="openStroke('${esc(ch)}')">✍️ Show</button>`;
+      html += `<button class="btn-ghost" onclick="speak('${esc(ch)}','${accent}')">🔊 Letter 讀音</button>`;
+      html += `<button class="btn-ghost" onclick="openStroke('${esc(ch)}')">✍️ Show 筆順</button>`;
       html += `</div></div></div>`;
 
       // practice cells — per case-variant × per style rows (both modes = 2×2 rows)
@@ -995,13 +1032,13 @@ function renderWorksheet() {
 
   // ===== WORD SECTION =====
   if (currentWords.length) {
-    html += `<div class="ws-section-title">Words <span class="en-hint">word-level practice</span></div>`;
+    html += `<div class="ws-section-title">Words <span class="en-hint">詞語練習</span></div>`;
     currentWords.forEach(w => {
       html += `<div class="word-block">`;
       html += `<div class="word-info">`;
       html += `<span class="word-name">${esc(w)} <small>${w.length} letters</small></span>`;
       html += ` <button class="btn-ghost" onclick="speak('${esc(w)}','${accent}')">🔊</button>`;
-      html += ` <button class="btn-ghost" onclick="showStrokes('${esc(w).replace(/'/g,"\\'")}')">✍️ Show</button>`;
+      html += ` <button class="btn-ghost" onclick="showStrokes('${esc(w).replace(/'/g,"\\'")}')">✍️ Show 筆順</button>`;
       html += `</div>`;
       // demo line
       stylesLoop(usePrint, useCursive, st => {
@@ -1022,13 +1059,13 @@ function renderWorksheet() {
 
   // ===== SENTENCE SECTION =====
   if (currentSentences.length) {
-    html += `<div class="ws-section-title">Sentences <span class="en-hint">sentence practice</span></div>`;
+    html += `<div class="ws-section-title">Sentences <span class="en-hint">句子練習</span></div>`;
     currentSentences.forEach(s => {
       html += `<div class="word-block sentence-block">`;
       html += `<div class="word-info">`;
       html += `<span class="word-name">${esc(s)}</span>`;
       html += ` <button class="btn-ghost" onclick="speak('${esc(s).replace(/'/g,"\\'")}','${accent}')">🔊</button>`;
-      html += ` <button class="btn-ghost" onclick="showStrokes('${esc(s).replace(/'/g,"\\'")}')">✍️ Show</button>`;
+      html += ` <button class="btn-ghost" onclick="showStrokes('${esc(s).replace(/'/g,"\\'")}')">✍️ Show 筆順</button>`;
       html += `</div>`;
       stylesLoop(usePrint, useCursive, st => {
         html += `<div class="word-line" style="height:calc(var(--cell-practice) * 0.5);">${guideSvg()}` +
@@ -1049,8 +1086,9 @@ function renderWorksheet() {
     });
   }
 
-  if (!html) html = '<p style="text-align:center;color:#889;padding:30px;">Nothing to practice — type some English.</p>';
+  if (!html) html = '<p style="text-align:center;color:#889;padding:30px;">Nothing to practice — type some English. 未有內容 —— 請輸入英文。</p>';
   content.innerHTML = html;
+  fitCaoniPatterns(content);   // 天草泥：量度實際長闊比再鋪圖（word/sentence 行唔會拉爆）
 }
 
 function stylesLoop(usePrint, useCursive, fn) {
@@ -1075,7 +1113,7 @@ function phonetic(ch) {
     o: 'oh', p: 'pee', q: 'cue', r: 'ar', s: 'ess', t: 'tee', u: 'you',
     v: 'vee', w: 'double-u', x: 'ex', y: 'why', z: 'zed'
   };
-  return 'Letter name: ' + (names[lower] || lower);
+  return 'Letter name 字母名: ' + (names[lower] || lower);
 }
 
 // ===== STROKE MODAL (animated stroke-order reveal) =====
@@ -1087,7 +1125,7 @@ let strokeNavList = null;   // when set (e.g. from a word's Show button) prev/ne
 
 function showStrokes(text) {
   const letters = String(text).toLowerCase().replace(/[^a-z]/g, '').split('');
-  if (!letters.length) { showToast('No letters to show'); return; }
+  if (!letters.length) { showToast('No letters to show 沒有字母可示範'); return; }
   openStroke(letters[0], letters);
 }
 
@@ -1132,7 +1170,7 @@ function openStroke(ch, navList) {
   });
 
   document.getElementById('strokeNote').textContent =
-    'Print and cursive, uppercase & lowercase — watch each stroke order, then write it yourself.';
+    'Print and cursive, uppercase & lowercase — watch each stroke order, then write it yourself.（正寫草寫、大楷小楷 —— 睇筆順，再自己寫）';
   document.getElementById('strokeResult').textContent = '';
   openModal('strokeModal');
 
@@ -1399,7 +1437,7 @@ function toggleQuizMode() {
   quizMode = !quizMode;
   const btn = document.getElementById('btnQuizMode');
   btn.classList.toggle('active', quizMode);
-  btn.textContent = quizMode ? '📖 Practice Mode' : '✍️ Dictation Mode';
+  btn.textContent = quizMode ? '📖 Practice Mode 練習模式' : '✍️ Dictation Mode 默書模式';
   document.querySelectorAll('#worksheet .guide-glyph').forEach(g => {
     g.style.display = quizMode ? 'none' : '';
   });
@@ -1412,8 +1450,19 @@ function toggleQuizMode() {
 function printWorksheet() {
   // Chineseword lesson: ensure fonts are fully loaded before printing.
   // If Playwrite/Andika aren't ready, print/PDF shows fallback system font.
+  fitCaoniPatterns();   // 用列印版面度多次（@media print 會改格大細）
   preloadFonts(['Andika', 'Playwrite']).then(() => { window.print(); });
 }
+
+// 天草泥：視窗／列印版面變咗就重新鋪圖（格嘅長闊比唔同 → 圖嘅縮放要跟）
+let caoniResizeTimer = null;
+window.addEventListener('resize', () => {
+  if (!document.querySelector('.caoni-art')) return;
+  clearTimeout(caoniResizeTimer);
+  caoniResizeTimer = setTimeout(() => fitCaoniPatterns(), 200);
+});
+window.addEventListener('beforeprint', () => fitCaoniPatterns());
+window.addEventListener('afterprint', () => fitCaoniPatterns());
 
 // ===== FONT BOOTSTRAP =====
 // Redundant backup for slow-connection scenarios.

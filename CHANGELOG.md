@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-19 — v1.3
+
+- **Fixed — Sky·Grass·Mud picture distorted on word/sentence lines**: the guide SVG uses `preserveAspectRatio="none"` so one viewBox unit is wider than it is tall on a long line, which stretched the artwork horizontally (up to ~12× on a full-width word line). The artwork is now drawn at a **fixed 3:1 pixel aspect** (same scale as the square letter cells) and **tiled horizontally** — alternate tiles mirrored so seams read as part of the picture — which keeps every mode in scale. Tiles are re-fitted on resize, before print and after print.
+- **Bilingual UI** (English + 中文): every option label, option value, quick button, print-bar button, modal button, toast, hint and worksheet section title now shows both languages — previously some were English-only, some bilingual and some Chinese-only (淨句子).
+- **Options panel re-organised** into three self-contained sections: 📐 **Layout 版面** (rows · guide style · cells per row · screen/print cell size) · 📝 **Content 內容** (style · case · section · tracing guide · dedupe) · 📄 **Page 頁面** (title · name · accent · show header). The collapsed "⚙️ Advanced" layer is gone — every control is visible in one pass.
+
 ## 2026-09-19 — v1.2
 
 - **Sky·Grass·Mud guide** (天草泥): optional three-band background — 天 sky (light blue) / 草 grass (light green) / 泥 mud (light brown) — drawn from the bundled artwork `caoni-bg.jpg` (sliced 3× across a practice row so one asset reassembles the full picture), plus a **colours-only** variant

@@ -15,12 +15,13 @@ Handwriting worksheet generator for English learners — **print & cursive**, **
   - Or both, side by side
 - **✍️ Show** — animated stroke guidance using **mask-reveal animation**: each letter's handwriting strokes are rendered from the font's own glyph skeletons, so the animation matches the reference letterform exactly (103 letters, ≥99.8% coverage)
 - **Four-line handwriting grid** (top, dashed midline, baseline, descender) — inline SVG so it prints reliably
-- **Sky·Grass·Mud guide** (天草泥) — optional three-band background drawn from the bundled artwork (`caoni-bg.jpg`, sliced 3× across a practice row), or a colours-only variant. Band boundaries follow the **font metrics** (sky ends at the x-height line, mud starts at the baseline), so capitals sit on the mud, lower-case bodies stay in the grass and only g/y/q/p tails reach into the mud
+- **Sky·Grass·Mud guide** (天草泥) — optional three-band background drawn from the bundled artwork (`caoni-bg.jpg`), or a colours-only variant. Band boundaries follow the **font metrics** (sky ends at the x-height line, mud starts at the baseline), so capitals sit on the mud, lower-case bodies stay in the grass and only g/y/q/p tails reach into the mud. On a long word/sentence line the artwork stays at the same scale as the letter cells and **tiles horizontally** (mirror-alternating) instead of stretching
 - **Light tracing guides** (描紅) in practice cells
 - **Speech**: US or UK English pronunciation per letter/word/sentence
 - **A4 print / PDF export** with print-size options (1.5–2.6cm)
 - **Dictation mode** (hide guides, readings as cues)
 - Settings persisted in localStorage
+- **Bilingual menu** (English + 中文) — labels, option values, buttons and hints all show both languages
 
 ## Tech
 
