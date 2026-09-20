@@ -288,21 +288,28 @@ body {
 /* 描紅點點版：EduDots（同 Pre 同形）＋ EduPre 做 fallback —— Dots 只有字母/數字，冇標點 */
 #worksheet.guide-caoni.dotted-trace .glyph-layer span.guide-glyph.print {
   font-family: "EduDots", "EduPre", "Segoe UI", sans-serif;
+  /* 2026-09-20（用戶要求）：虛線／描紅字再稍稍下移；「與中線重疊也可以」→ 允許壓線。
+     額外下移 = --cg-dot-extra，比例同 --cg-shift（hw-cell 1% / word-line 0.75% / sentence 0.5% of cell 高）。
+     ⚠️ 只影響 .dotted-trace（點點開、caoni、字體有點點孿生版）；實線字完全不變。 */
+  top: calc(var(--cg-shift, 0px) + var(--cg-dot-extra, 0px));
 }
 #worksheet.guide-caoni .hw-cell .glyph-layer {
   --cg-fs: calc(var(--cell-font) * var(--cg-fs-mult, 1.109));
-  --cg-mb: calc(var(--cell-practice, 96px) * (0.85 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 1.4px);
-  --cg-shift: calc(var(--cell-practice, 96px) * 0.01);
+  --cg-mb: calc(var(--cg-cell, var(--cell-practice, 96px)) * (0.85 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 1.4px);
+  --cg-shift: calc(var(--cg-cell, var(--cell-practice, 96px)) * 0.01);
+  --cg-dot-extra: calc(var(--cg-cell, var(--cell-practice, 96px)) * 0.01);   /* 虛線（描紅）字額外下移 */
 }
 #worksheet.guide-caoni .word-line .glyph-layer {
   --cg-fs: calc(var(--cell-font) * 0.75 * var(--cg-fs-mult, 1.109));
-  --cg-mb: calc(var(--cell-practice, 96px) * 0.75 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 2px);
-  --cg-shift: calc(var(--cell-practice, 96px) * 0.75 * 0.01);
+  --cg-mb: calc(var(--cg-cell, var(--cell-practice, 96px)) * 0.75 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 2px);
+  --cg-shift: calc(var(--cg-cell, var(--cell-practice, 96px)) * 0.75 * 0.01);
+  --cg-dot-extra: calc(var(--cg-cell, var(--cell-practice, 96px)) * 0.75 * 0.01);
 }
 #worksheet.guide-caoni .sentence-block .glyph-layer {
   --cg-fs: calc(var(--cell-font) * 0.5 * var(--cg-fs-mult, 1.109));
-  --cg-mb: calc(var(--cell-practice, 96px) * 0.5 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 2px);
-  --cg-shift: calc(var(--cell-practice, 96px) * 0.5 * 0.01);
+  --cg-mb: calc(var(--cg-cell, var(--cell-practice, 96px)) * 0.5 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 2px);
+  --cg-shift: calc(var(--cg-cell, var(--cell-practice, 96px)) * 0.5 * 0.01);
+  --cg-dot-extra: calc(var(--cg-cell, var(--cell-practice, 96px)) * 0.5 * 0.01);
   --cg-cap-adj: var(--caoni-cap-adj5, 1);   /* 0.5× 行細，cap 圓頭 overshoot 比例唔同 → 補償 */
 }
 #worksheet.guide-caoni .glyph-layer span.print {
@@ -334,8 +341,11 @@ body {
 }
 /* perRow 模式格仔闊度唔再由 --cell-practice 決定，字級要跟住格仔：
    否則字固定 61.44px 但格仔 216px（比例 0.285 而非 0.64），基線亦對唔上四線格 */
+/* 2026-09-20：--cell-practice 亦要跟格仔，唔係淨係字級。天草泥嘅 --cg-mb / --cg-shift /
+   --cg-dot-extra 都係用 --cell-practice 計垂直位置 —— 只改 --cell-font 的話，perRow=4（格 216px）
+   條基線會落到 73.23% 而畫出嚟嘅草線喺 68.65%（差 4.6%，即 E 足足低咗 5.9px）。 */
 @supports (container-type: inline-size) {
-  .practice-row[data-perrow] .practice-cell { container-type: inline-size; --cell-font: 64cqw; }
+  .practice-row[data-perrow] .practice-cell { container-type: inline-size; --cell-font: 64cqw; --cg-cell: 100cqw; }
 }
 
 /* ===== WORD / SENTENCE LINES ===== */
@@ -484,6 +494,7 @@ body {
     flex: 0 0 var(--cell-practice) !important;
     width: var(--cell-practice) !important;
     height: var(--cell-practice) !important;
+    --cg-cell: var(--cell-practice);   /* 列印時格仔真係由 --cell-practice 決定，唔可以用 cqw */
   }
   .cell-guides line { stroke-width: 1.6; }
   /* 天草泥三色模板：ID+class specificity 先壓得住上面 #worksheet 嘅 !important */

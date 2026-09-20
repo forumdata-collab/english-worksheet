@@ -1,5 +1,27 @@
 # Changelog
 
+## 2026-09-20 — v1.19
+
+### Changed — 虛線（描紅）字再稍稍下移（用戶：「在天草泥模式下，虛線字再稍稍向下移，與中線重疊也可以」）
+- 新增 CSS var `--cg-dot-extra`（各 context 比例同 `--cg-shift`：hw-cell 1% / word-line 0.75% / sentence 0.5% of cell 高）
+- `#worksheet.guide-caoni.dotted-trace .glyph-layer span.guide-glyph.print { top: calc(var(--cg-shift) + var(--cg-dot-extra)) }`
+- **只影響點點開啟 + caoni + 字體有點點孿生版**（即 `.dotted-trace`）；實線示範字（`.demo-glyph`）完全不變
+- 實測（perRow=auto，0% = 格頂）：虛線 E 基線 − 草線 = **lg +1.34% · md +1.55% · sm +1.50%**（約 1.3–1.5px，容許壓線）；實線仍 **+0.28%**
+
+### Fixed — perRow 格仔嘅天草泥基線偏差（順手揭到，一直存在）
+**根因**：`.practice-row[data-perrow] .practice-cell` 只用 `--cell-font: 64cqw` 跟格仔，`--cell-practice` 冇跟
+→ 天草泥垂直計算（`--cg-mb` / `--cg-shift` / `--cg-dot-extra`）全部用舊嘅 base 值。
+**實測 perRow=4（格 216px）**：基線 73.23% vs 畫出嚟嘅草線 68.65% → **差 +4.58%（即 E 低咗 5.9px）** ✗
+**修法**：新增 `--cg-cell`（perRow 格內 = `100cqw`，其餘 context 回落 `--cell-practice`），三個垂直 var 改用 `--cg-cell`。
+⚠️ 唔可以直接改 `--cell-practice` —— 列印規則有 `width: var(--cell-practice) !important` 會變 circular；列印版要另外設 `--cg-cell: var(--cell-practice)`。
+**實測修正後**：perRow=4 → **+1.02%** ✓；perRow=auto 不變（+1.34%）✓；列印 perRow=4 格仔仍 83px = 2.2cm ✓ 差 +0.85%
+
+### 量度方法修正
+之前嘅探針攞咗 `.hw-cell` 第一個 span（= `.demo-glyph` 示範字），唔係真正嘅 `.guide-glyph` 練習字 ✗
+→ 要明確揀 `.glyph-layer span.guide-glyph` 並搵有佢嘅 cell。
+
+回歸 **75 → 78/78**（新增 3 條：點點字用 EduDots、虛線比草線再低 ~1%、實線示範字不受影響）；audit 11 情境零溢出。
+
 ## 2026-09-20 — v1.18
 
 ### Fixed — 天草泥 E 底唔貼草線（用戶報「E字要貼草線」）
