@@ -39,8 +39,8 @@ english-worksheet/
 ├── index.html          # Single-page app (UI + logic + styles)
 ├── caoni-bg.jpg        # Sky·grass·mud artwork — ONE file for both templates; the print band
 │                       #   boundaries are hit by re-positioning/scaling it (caoniArtPlacement)
-├── strokes_font.js     # Generated stroke paths, 3 datasets: print (Andika), print_pre
-│                       #   (Edu AU VIC WA NT Pre — caoni+Pre) and cursive (Playwrite)
+├── strokes_font.js     # Generated stroke paths, 4 datasets: print (Andika), print_pre
+│                       #   (EduPre), print_pwusm (Playwrite US Modern) and cursive (Playwrite)
 ├── fonts/              # hand.css + the 6 woff2 actually used: Andika, EduPre, EduDots, PWUSM,
 │                       #   Playwrite 400/700 (unused candidates were pruned)
 ├── tools/              # Stroke-generation pipeline (Python)
@@ -63,7 +63,7 @@ Or open `index.html` directly in a browser.
 
 ## Code health (2026-09-19 audit)
 
-- **Regression suite, 56 checks** (headless chromium + real `change` events, results read via `--dump-dom`): all four sections × case × style · 5 guide styles + Sky·Grass·Mud tile aspect · `practice=0` · long-sentence / no-space-word wrapping · cells-per-row font scaling · dictation mode · stroke modal · localStorage · horizontal overflow · JS errors · caoni font switch (all three fonts: size fills the cell, family applied, CSS vars written) · dotted tracing · Show-modal font/data switch (caoni+Pre → EduPre letterform + print_pre skeleton; fonts without a skeleton fall back to Andika). Print layout is tested separately by forcing the `@media print` rules on at A4 width: no overflow.
+- **Regression suite, 58 checks** (headless chromium + real `change` events, results read via `--dump-dom`): all four sections × case × style · 5 guide styles + Sky·Grass·Mud tile aspect · `practice=0` · long-sentence / no-space-word wrapping · cells-per-row font scaling · dictation mode · stroke modal · localStorage · horizontal overflow · JS errors · caoni font switch (all three fonts: size fills the cell, family applied, CSS vars written) · dotted tracing · Show-modal font/data switch (caoni+Pre → EduPre letterform + print_pre skeleton; fonts without a skeleton fall back to Andika). Print layout is tested separately by forcing the `@media print` rules on at A4 width: no overflow.
 - **Fixed smells**: Divergent Change + Long Method (`renderWorksheet` 175 lines → orchestrator + 4 section builders) · Duplicated Code (word/sentence rows → `lineBlockHtml`) · Speculative Generality (unused params) · Dead Code (CSS left over from the removed "Advanced" panel).
 - **Accepted by design**: single `index.html`, no build step (Large Class is the deliberate trade-off); `splitToFitLine()` 4 params; cross-file duplication with chineseword — the two sites are separate deployments, and shared helpers are deliberately small (`jsArg`, guide SVG).
 

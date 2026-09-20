@@ -971,7 +971,7 @@ var CAONI_FONTS = {
             asc: 0.930, xh: 0.510, desc: 0.430, cap: 0.920, tAsc: 0.810, k: 0.082, capAdj5: 0.975 },
   // Playwrite US Modern：同一家族嘅「現代」美式草寫，用 calt 關當印刷體。三區偏離 1/3 只 7.3（Pre 8.9）
   // 實測值（app 內 ink ÷ font-size；calt 關之後同字檔嘅 bbox 差好遠，一定要咁量）
-  pwusm: { label: 'Playwrite US Modern', fam: 'PWUSM', trace: null, caltOff: true,
+  pwusm: { label: 'Playwrite US Modern', fam: 'PWUSM', trace: null, caltOff: true, dataKey: 'print_pwusm',
            asc: 0.9404, xh: 0.5309, desc: 0.4550, cap: 0.9380, tAsc: 0.7353, k: 0.0485, capAdj5: 0.975 },
   andika: { label: 'Andika', fam: 'Andika', trace: null,
             asc: 0.800, xh: 0.520, desc: 0.240, cap: 0.720, tAsc: 0.650, k: 0.085, capAdj5: 0.975 }
@@ -1513,6 +1513,10 @@ function strokeFont(style) {
   const f = strokeFontEntry(style) || CAONI_FONTS.andika;
   return '"' + f.fam + '", "Andika", "Segoe UI", sans-serif';
 }
+function strokeFeat(style) {
+  const f = strokeFontEntry(style);
+  return (f && f.caltOff) ? "'calt' 0" : '';
+}
 function strokePathsFor(style, ch) {
   const key = strokeDataKey(style);
   if (typeof LETTER_PATHS === 'undefined' || !LETTER_PATHS[key]) return null;
@@ -1563,6 +1567,7 @@ function buildStrokeSvg(svg, ch, paths, style) {
   const FS = strokeFontSize(style);
   const uid = 'sbMask' + (++_sbUid);
 
+  const feat = strokeFeat(style);   // Playwrite 系要 calt 關，否則 modal 露出連筆字形同遮罩唔夾
   const makeText = (fill) => {
     const t = document.createElementNS(NS, 'text');
     t.setAttribute('x', '0');
@@ -1570,6 +1575,7 @@ function buildStrokeSvg(svg, ch, paths, style) {
     t.setAttribute('text-anchor', 'middle');
     t.setAttribute('font-size', '1');
     t.setAttribute('font-family', fam);
+    if (feat) t.style.fontFeatureSettings = feat;
     t.setAttribute('fill', fill);
     t.textContent = ch;
     return t;

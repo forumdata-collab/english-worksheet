@@ -8,8 +8,12 @@
 - metric 全部**喺 app 內實測反推**（calt 關之後同字檔 bbox 差好遠）：asc 0.9404 · xh 0.5309 · desc 0.4550 · cap 0.9380 · tAsc 0.7353 · k 0.0485。
 
 ### Notes
-- **呢隻字體冇筆順骨架數據**（canvas 捉唔到 calt 關嘅字形，DOM 擷取未做）→ Show modal 加咗守衛：字體表有 `dataKey`（EduPre → `print_pre`）就用自己一套，否則**整套回落 Andika**（字形同遮罩一致 > 同工作紙一致）。EduPre 照舊用 `print_pre` ✓
-- 回歸 **52 → 56 項**（+3 隻字體字級/字體/--cg-base 斷言、+1 PWUSM modal 回退斷言）。
+- **PWUSM 有自己一套筆順數據**（`print_pwusm`，52 字母 · `group.py` 報 0 隻唔符目標 · `finalcheck` 全部 100% 覆蓋）。
+  ⚠️ 之前寫「canvas 捉唔到 calt 關嘅字形」係**錯嘅假設**：單一個字冇相鄰字母，calt 唔會觸發，所以 canvas 捉到嘅就係 unjoined 字形（實測同 app 渲染差 <1.3%：h 0.9525 vs 0.9404、a 0.52 vs 0.531、g 尾完全一樣）→ 唔使改 DOM 擷取。
+- modal 嘅字形亦要 `calt 0`（`strokeFeat()`）—— 否則 SVG text 會用連筆字形，同 unjoined 遮罩唔夾。
+- 字體表加 `dataKey`：有自己數據就用自己一套（EduPre → `print_pre`、PWUSM → `print_pwusm`），冇就整套回落 Andika（字形/遮罩一致 > 同工作紙一致）。
+- 保留一個已知小問題：word-line（0.75×）情境下小楷升部會凸出頂線約 2–3%（Pre 都一樣，屬 sub-scale hinting 差異）；主要嘅 letters 格（大楷頂 0.02–0.93%）冇事。
+- 回歸 **52 → 58 項**（+3 隻字體字級/字體/--cg-base、+2 PWUSM modal 字形/dataKey/calt、+1 print_pwusm 筆數）。
 
 ## 2026-09-20 — v1.12
 
