@@ -1489,6 +1489,34 @@ function lineBlockHtml(o, ctx, cfg) {
   const layerStyle = cfg.layerStyle || '';
   const arg = jsArg(cfg.text);
 
+  // 單份 chunk 用「字距」加闊填滿一行（重複嘅短詞已經填滿，只需微調）
+  // 用戶要求：「The quick brown fox…」這類經典例子，字距適當加闊點，同時保持一行展示。
+  // ⚠️ 只改水平字距 —— 對基線/四線格零影響（垂直佈局完全不變）。
+  const spaced = (st, ch) => {
+    const prFonts = fonts.filter((_, i) => ctx.styles[i] === st);
+    const w0 = measureWidth(ch, prFonts);
+    const text = (w0 > 0 && repeatCount(w0) > 1) ? Array(repeatCount(w0)).fill(ch).join('  ') : ch;
+    const w = measureWidth(text, prFonts);
+    const fontPx = (prFonts[0] && prFonts[0].px) || base;
+    // 填充目標 = min(列印容量, 螢幕容器內寬)：列印優先，但唔可以撐爆螢幕
+    // （size=lg + 印刷格 2.2cm 時列印容量 1082px > 螢幕 896px，直接填會溢出 170px）
+    const wsEl = document.getElementById('wsContent');
+    const screenCap = Math.max(160, (wsEl && wsEl.clientWidth ? wsEl.clientWidth : 904) - 8);
+    const target = Math.min(capPx, screenCap);
+    const slack = target - w - 6;                      // −6px 安全邊際（列印換算後仍在邊界內）
+    let ws = 0, ls = 0;
+    if (slack > 1 && w > 0) {
+      const nsp = (text.match(/ /g) || []).length;
+      // 有空格 → 加詞距（每次最多 +1.2 字級）；無空格單詞 → 加字距（每次最多 +0.3 字級）
+      if (nsp) ws = Math.min(slack / nsp, fontPx * 1.2);
+      else ls = Math.min(slack / Math.max(1, text.length - 1), fontPx * 0.3);
+    }
+    return { text, ws: ws > 0.5 ? ws : 0, ls: ls > 0.3 ? ls : 0 };
+  };
+  const spacingCss = (L) => (L.ws ? `word-spacing:${L.ws.toFixed(2)}px;` : '') +
+                             (L.ls ? `letter-spacing:${L.ls.toFixed(2)}px;` : '');
+  const baseLayerStyle = cfg.layerStyle ? cfg.layerStyle.replace(/;?\s*$/, ';') : '';
+
   let html = `<div class="word-block${cfg.blockCls ? ' ' + cfg.blockCls : ''}">`;
   html += `<div class="word-info"><span class="word-name">${esc(cfg.text)}${cfg.note || ''}</span>`;
   html += ` <button class="btn-ghost" onclick="speak('${arg}','${ctx.accent}')">🔊</button>`;
@@ -1497,30 +1525,28 @@ function lineBlockHtml(o, ctx, cfg) {
 
   // 示範行（每 style × 該 style 嘅 chunk 一行）
   ctx.styles.forEach(st => chunksByStyle[st].forEach(ch => {
+    const L = spaced(st, ch);
     html += `<div class="word-line"${wrapStyle ? ` style="${wrapStyle}"` : ''}>${guideSvg(undefined, st)}` +
-      `<div class="glyph-layer${layerCls}"${layerStyle ? ` style="${layerStyle}"` : ''}>` +
-      `${glyphSpansHtml(ch, st, 'demo-glyph')}</div></div>`;
+      `<div class="glyph-layer${layerCls}" style="${baseLayerStyle}${spacingCss(L)}">` +
+      `${glyphSpansHtml(L.text, st, 'demo-glyph')}</div></div>`;
   }));
 
-  // 練習行 — 循環 style × 該 style 嘅 chunk；短詞（寬度遠細於行容量）自動重複填滿整行
+  // 練習行 — 循環 style × 該 style 嘅 chunk；短詞自動重複填滿，其餘加闊字距填滿
   const pairs = [];
   ctx.styles.forEach(st => chunksByStyle[st].forEach(ch => pairs.push({ st, ch })));
   // 重複次數計算：一行除咗示範外，練習行將短詞重複 N 次（間距 = 1.2 個字級）
-  const repeatCount = (w) => {
+  function repeatCount(w) {
     if (w <= 0) return 1;
     const gap = base * (CAONI_ACTIVE ? Math.max(0.5, caoniGeo('print').fs / 100 * 0.5) : 0.5);
     return Math.max(1, Math.floor((capPx + gap) / (w + gap)));
-  };
+  }
   for (let r = 0; r < o.practice; r++) {
     const pr = pairs[r % pairs.length];
-    const prFonts = fonts.filter((_, i) => ctx.styles[i] === pr.st);
-    const w = measureWidth(pr.ch, prFonts);
-    let t = pr.ch;
-    if (w > 0) {
-      const n = repeatCount(w);
-      if (n > 1) t = Array(n).fill(pr.ch).join('  ');   // 兩個空格做間距
-    }
-    html += practiceCellHtml(t, pr.st, { wrapStyle, layerCls: cfg.layerCls, layerStyle, guide: o.guide, slice: r % 3 });
+    const L = spaced(pr.st, pr.ch);
+    html += practiceCellHtml(L.text, pr.st, {
+      wrapStyle, layerCls: cfg.layerCls, layerStyle: baseLayerStyle + spacingCss(L),
+      guide: o.guide, slice: r % 3,
+    });
   }
   return html + `</div>`;
 }
