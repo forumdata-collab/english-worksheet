@@ -30,8 +30,17 @@ through a mask of centreline paths derived from those same glyphs.
    merge collinear edges, simplify, order → `/tmp/glyphs/paths.json`
    (`PRUNE_F = 0.13` is the current default and passes the coverage gate.)
 3. `python3 tools/group.py` — group segments into teaching strokes so the red
-   numbers show the school stroke count → `/tmp/glyphs/grouped.json`
-   (edit `IDEAL_PRINT` / `IDEAL_CURSIVE` to change the expected counts).
+   numbers show the school stroke count → `/tmp/glyphs/grouped.json`.
+   `GROUP_FONT=<name>` switches to that font's target counts
+   (`IDEAL_PRINT_BY_FONT`): the teaching count follows the **letterform**, not the
+   letter — Andika's capital I has top/bottom bars (3 strokes), Edu AU VIC WA NT
+   Pre's I is a **plain vertical** (measured: uniform 22–24 px wide over the whole
+   height, no widening in the top/bottom thirds) so 1 stroke is right, and its L is
+   one motion. Two split rules matter: short skeletons (3–4 points) use a ±1 window
+   (`_sharpest_split`), and the fallback must return the closest valid cut instead
+   of `None` — otherwise "arm + long spine" shapes (E, F) can never reach their
+   target. A degenerate cut (a 1-point piece) is rejected: `emit.py`'s Catmull-Rom
+   smooth would crash on it. Run and check that the reported mismatch count is 0.
 4. `python3 tools/emit.py` — smooth (Catmull-Rom → cubic Bézier) and write
    `/tmp/glyphs/strokes_font.js`. `WIDTH_EM = 0.30` (0.20em left 6 letters below
    99.9%; 0.30em brings every print letter to 100% and the worst cursive letter to

@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-09-20 — v1.12
+
+### Fixed
+- **Pre 版筆順筆數（背景 pipeline log 揭發）**：`print_pre`（Edu AU VIC WA NT Pre）有 5 隻字嘅教學筆數唔符目標 —— E 3≠4、F 2≠3、Y 2≠3（Andika 版 0 隻唔符，即係我自己新加嘅數據嘅問題）。根因係 `group.py` 嘅拆筆規則：
+  - `_sharpest_split()` 只處理 ≥5 點嘅骨架 → 短骨架（3–4 點，例如 F 嘅「頂橫＋長脊」）永遠拆唔到，直接 break；
+  - 後備「弧長一半」切點會 `return None`（轉角兩點太近，cos 係噪音）→ E 拆完一次就停。
+  修法：短骨架用 ±1 window；後備改成**揀最接近弧長一半、兩邊都 ≥2 點**嘅切點（唔再 return None）；同時守住退化片段（1 點）唔可以交去 `emit.py`（Catmull-Rom 會 IndexError）。重跑後：**E=4、F=3、Y=3**，`group.py` 報 0 隻唔符目標，其他 51 隻 + 全部 cursive 一個都冇動（逐字 diff 過）。
+- **目標筆數要跟字形，唔係跟字母**：Edu Pre 嘅大寫 `I` 係**純直筆**（逐行量墨跡闊度：全高 22–24px 等闊，上下 1/3 冇加闊）→ 1 筆才對；`L` 一筆過。Andika 嘅 `I` 有上下橫 → 3 筆。新增 `IDEAL_PRINT_BY_FONT` + `GROUP_FONT=<字體>` 環境變數，唔指定就沿用原表（Andika 數據完全不受影響）。
+
+### Verify
+- 回歸 **52/52**（新增 4 項：`print_pre` 52 隻齊、E4/F3/Y3/I1/L1 跟字形、Andika I3/L2 不變、每隻字都有筆劃）。
+- `finalcheck.py`：print 52 隻 **100%** 遮罩覆蓋；最差 cursive I 99.81%（1/104 <99.9%）。
+- 筆劃總數 print 102 → **105**；`STROKE_WIDTH_EM` 0.30。
+
 ## 2026-09-20 — v1.11
 
 ### Fixed

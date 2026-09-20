@@ -28,6 +28,14 @@ IDEAL_CURSIVE = dict(
     P=1, Q=2, R=1, S=1, T=1, U=1, V=1, W=1, X=2, Y=1, Z=1,
 )
 
+# 目標筆數其實跟字形走，唔係跟字母：
+#   Andika 嘅大寫 I 有上下橫 → 3 筆；Edu AU VIC WA NT Pre 嘅 I 係**純直筆**（量過：全高 22–24px 等闊，
+#   上下 1/3 冇加闊）→ 1 筆才對；L 亦係一筆過（直＋腳）。
+# 用 GROUP_FONT=<字體名> 指定；唔指定就用 IDEAL_PRINT。
+IDEAL_PRINT_BY_FONT = {
+    'EduPre': dict(I=1, L=1),
+}
+
 
 def _dist(a, b):
     return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** 0.5
@@ -82,12 +90,13 @@ def _sharpest_split(pts):
     """Index of the corner where a one-piece glyph is really two strokes.
     Falls back to the arc-length midpoint when the curve has no sharp corner
     (still reveals as one continuous pen motion, just numbered as two)."""
-    if len(pts) < 5:
+    if len(pts) < 3:
         return None
+    k = 2 if len(pts) >= 5 else 1          # 短骨架（3–4 點，例如 F 嘅「直+頂橫」）用 ±1 window
     best, bi = -2.0, None
-    for i in range(2, len(pts) - 2):
-        v1 = (pts[i][0] - pts[i - 2][0], pts[i][1] - pts[i - 2][1])
-        v2 = (pts[i + 2][0] - pts[i][0], pts[i + 2][1] - pts[i][1])
+    for i in range(k, len(pts) - k):
+        v1 = (pts[i][0] - pts[i - k][0], pts[i][1] - pts[i - k][1])
+        v2 = (pts[i + k][0] - pts[i][0], pts[i + k][1] - pts[i][1])
         n1 = (v1[0] ** 2 + v1[1] ** 2) ** 0.5 or 1e-9
         n2 = (v2[0] ** 2 + v2[1] ** 2) ** 0.5 or 1e-9
         cos = (v1[0] * v2[0] + v1[1] * v2[1]) / (n1 * n2)
@@ -95,13 +104,17 @@ def _sharpest_split(pts):
             best, bi = cos, i
     if bi is not None and best < 0.85:
         return bi
-    # no usable corner -> cut at the half-way point of the arc
+    # 冇明顯轉角 → 揀最接近弧長一半、而兩邊都 ≥2 點嘅切點。
+    # ⚠️ 一定唔可以 return None：E / F 呢類「橫臂＋長脊」嘅骨架（轉角兩點距離極短，cos 係噪音）
+    # 會永遠達唔到目標筆數（E 要 4、F 要 3）。
     half, acc = _len(pts) / 2.0, 0.0
-    for i in range(len(pts) - 1):
+    best_i, best_d = None, None
+    for i in range(len(pts) - 2):
         acc += _dist(pts[i], pts[i + 1])
-        if acc >= half:
-            return i + 1
-    return None
+        d = abs(acc - half)
+        if best_d is None or d < best_d:
+            best_i, best_d = i + 1, d
+    return best_i
 
 
 def group(strokes, target):
@@ -124,7 +137,7 @@ def group(strokes, target):
         gi = max(range(len(groups)), key=lambda i: _group_len(groups[i], strokes))
         g = groups[gi]
         # split the longest single path in this group at its sharpest corner
-        cand = [i for i in g if len(strokes[i]) >= 6]
+        cand = [i for i in g if len(strokes[i]) >= 3]   # 3 點就已經有一個彎位拆得（F 嘅「直＋頂橫」）
         if not cand:
             break
         li = max(cand, key=lambda i: _len(strokes[i]))
@@ -132,6 +145,8 @@ def group(strokes, target):
         if cut is None:
             break
         a, b = strokes[li][:cut + 1], strokes[li][cut:]
+        if len(a) < 2 or len(b) < 2:      # 退化片段（1 點）唔要 —— emit 嘅 smoothing 會炸
+            break
         strokes[li] = a
         strokes.insert(li + 1, b)
         groups = [[i if i <= li else i + 1 for i in gg] for gg in groups]
@@ -140,9 +155,13 @@ def group(strokes, target):
 
 
 if __name__ == '__main__':
+    import os
     paths = json.load(open('/tmp/glyphs/paths.json'))
+    ideal_print = dict(IDEAL_PRINT)
+    ideal_print.update(IDEAL_PRINT_BY_FONT.get(os.environ.get('GROUP_FONT', ''), {}))
+    targets = (('print', ideal_print), ('cursive', IDEAL_CURSIVE))
     out = {'print': {}, 'cursive': {}}
-    for style, ideal in (('print', IDEAL_PRINT), ('cursive', IDEAL_CURSIVE)):
+    for style, ideal in targets:
         for ch, strokes in paths[style].items():
             target = ideal.get(ch, len(strokes))
             groups, strokes2 = group([list(map(tuple, s)) for s in strokes], target)
@@ -151,7 +170,7 @@ if __name__ == '__main__':
     json.dump(out, open('/tmp/glyphs/grouped.json', 'w'))
 
     bad = []
-    for style, ideal in (('print', IDEAL_PRINT), ('cursive', IDEAL_CURSIVE)):
+    for style, ideal in targets:
         for ch, g in out[style].items():
             if len(g) != ideal[ch]:
                 bad.append(f'{style} {ch}: {len(g)} != {ideal[ch]}')
