@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-09-20 — v1.18
+
+### Fixed — 天草泥 E 底唔貼草線（用戶報「E字要貼草線」）
+**原因（v1.17 副作用）**：v1.17 用 CSS `--cg-shift` 把**字形**統一下移 1%（cell 高）令大楷唔穿頂框，但**格線冇跟** →
+草/泥界線（= 基線所在）仍然在原位，於是字底離開草線 **1.4%**（約 2px），細楷頂亦離開天線。
+
+**修法**：新增 `CAONI_LINE_DROP = 1`（`caoniPattern()` 內），`xh`（天/草界線＝x-height line）同 `base`（草/泥界線＝基線）一齊 +1
+viewBox 單位（= 該元素高度 1%，三個 print context 一樣）；`caoniArtPlacement()` 用同一對值 → 原圖內部線自動跟落。
+**cursive 除外**（`drop = cur ? 0 : CAONI_LINE_DROP`）：Playwrite 唔受 `--cg-shift` 影響，所以格線都唔應郁。
+
+**實測（量畫出嚟嘅線 vs 字形基線，0% = 格頂）**
+- E 基線 − 草線：lg **+0.28%** · md **+0.56%** · sm **+0.51%** · xs +1.56%（全部 < 1px，之前 lg 係 −1.4%）
+- 細楷 e 頂 − 天線：lg **−0.10%** · md **−0.03%** · sm −0.25%（貼到天線）
+- 大楷墨頂（唔再穿框）：lg +2.34% · md +1.06% · sm +1.78% · xs +3.13%
+- ⚠️ 量度陷阱：`viewBox="0 0 100 100"` + `preserveAspectRatio="none"`，但 **svg 124px vs cell 128px**（內縮 2px）
+  → 換算要計 `(svg.top − cell.top + y/100 × svg.height) / cell.height`，唔可以直接當 %
+- 回歸 **73 → 75/75**（新增 2 條：基線貼草線 ≤0.6%、CAONI_LINE_DROP 存在）；audit 11 情境零溢出
+
 ## 2026-09-20 — v1.17
 
 ### Fixed — 天草泥點點描紅字穿頂框（用戶報「虛線練習字穿頂框及中間橫線，批量調整往下」）

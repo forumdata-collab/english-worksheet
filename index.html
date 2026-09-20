@@ -1206,6 +1206,11 @@ function glyphSpansHtml(text, st, baseCls, opts) {
 
 // 原圖內部界線實測：234px 高、界線喺 y=77 / 154 → 32.9% / 65.8%
 var CAONI_ART = { a1: 0.3291, a2: 0.6560 };
+/* 2026-09-20：字形用 CSS --cg-shift 統一下移 1%（cell 高）令大楷唔穿頂框，
+   格線（天/草界線 + 草/泥界線 = 基線）要跟同一個量落，否則 E 底會離開草線。
+   單位 = 圖內 0-100 viewBox = 該元素高度嘅 %，所以 print 三個 context（hw-cell / word-line /
+   sentence-block）都一樣係 +1。cursive 唔受 --cg-shift 影響，所以唔郁（DROP = 0）。 */
+const CAONI_LINE_DROP = 1;
 // 計一個 y/height 令原圖嗰兩條線啱啱落喺天草泥嘅天空/草、草/泥界線（唔使切片）
 function caoniArtPlacement(xh, base) {
   const h = (base - xh) / (CAONI_ART.a2 - CAONI_ART.a1);
@@ -1254,8 +1259,9 @@ function caoniPattern(slice, st) {
   // cursive 用原圖三等分（CAONI_CURSIVE），print 用 Pre 嘅 metric 界線（CAONI_XH/CAONI_BASE）。
   // 兩者都只係「一張原圖 + 一個 y/height 位移縮放」，令原圖內部兩條線啱啱落喺色帶界線（唔使切片）。
   const cur = st === 'cursive';
-  const xh = cur ? CAONI_CURSIVE.xh : CAONI_XH;
-  const base = cur ? CAONI_CURSIVE.base : CAONI_BASE;
+  const drop = cur ? 0 : CAONI_LINE_DROP;      // 跟 --cg-shift（print 才有）
+  const xh = (cur ? CAONI_CURSIVE.xh : CAONI_XH) + drop;
+  const base = (cur ? CAONI_CURSIVE.base : CAONI_BASE) + drop;
   const pl = caoniArtPlacement(xh, base);
   const f = v => +(+v).toFixed(1);
   if (!CAONI_IMG) {          // 只有顏色
