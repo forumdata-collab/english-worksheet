@@ -15,7 +15,7 @@ Handwriting worksheet generator for English learners — **print & cursive**, **
   - Or both, side by side
 - **✍️ Show** — animated stroke guidance using **mask-reveal animation**: each letter's handwriting strokes are rendered from the font's own glyph skeletons, so the animation matches the reference letterform exactly (103 letters, ≥99.8% coverage)
 - **Four-line handwriting grid** (top, dashed midline, baseline, descender) — inline SVG so it prints reliably
-- **Sky·Grass·Mud guide** (天草泥) — optional three-band background drawn from the bundled artwork (`caoni-bg.jpg`), or a colours-only variant. Band boundaries follow the **font metrics** (sky ends at the x-height line, mud starts at the baseline), so capitals sit on the mud, lower-case bodies stay in the grass and only g/y/q/p tails reach into the mud. In this mode **print capitals are drawn to reach the top frame** (ink top ≈1% of the cell) while the baseline stays locked, so the capital fills the sky band and the lower-case x-height stays in the grass. On a long word/sentence line the artwork stays at the same scale as the letter cells and **tiles horizontally** (mirror-alternating) instead of stretching
+- **Sky·Grass·Mud guide** (天草泥) — optional three-band background drawn from the bundled artwork (`caoni-bg.jpg`), or a colours-only variant. **The font is selectable in this mode** (`Edu AU VIC WA NT Pre` by default, or `Andika`); the 4-line *standard* mode always stays on Andika. Everything else is **derived from the chosen font's metrics** (`CAONI_FONTS` table: ascender / x-height / descender / cap / t / `k`): band boundaries (`caoniGeo()`), letter size (the whole glyph block fills the cell), baseline, and the cap & t multipliers (`asc/cap`, `asc/tAsc`). So print capitals reach the top frame (ink top ≈0.1% with Pre, ≈1.3% with Andika), lowercase ascenders b/d/f/h/k/l (and t, stretched to match h) touch the top, the lowercase bodies fill the grass band, and the g/y/p/q tails reach the bottom (≈99%). The artwork is *not* sliced: `caoniArtPlacement()` computes a y/height offset that puts the artwork's own two lines (measured at 32.91% / 65.60%) exactly on the band boundaries, so switching fonts needs no re-cutting. The cursive template is untouched (Playwrite's proportions already suit the original even thirds). On a long word/sentence line the artwork stays at the same scale as the letter cells and **tiles horizontally** (mirror-alternating) instead of stretching. Optional **dotted tracing** (`Edu AU VIC WA NT Dots`, Pre only) is available for tracing practice.
 - **Light tracing guides** (描紅) in practice cells
 - **Long text wraps**: word/sentence practice lines are measured at render time and split at word boundaries onto as many guide rows as needed (an over-long single word breaks character-wise), so nothing spills past the grid
 - **Speech**: US or UK English pronunciation per letter/word/sentence
@@ -37,7 +37,8 @@ Handwriting worksheet generator for English learners — **print & cursive**, **
 ```
 english-worksheet/
 ├── index.html          # Single-page app (UI + logic + styles)
-├── caoni-bg.jpg        # Sky·grass·mud artwork (sliced 3× for the 天草泥 guide)
+├── caoni-bg.jpg        # Sky·grass·mud artwork — ONE file for both templates; the print band
+│                       #   boundaries are hit by re-positioning/scaling it (caoniArtPlacement)
 ├── strokes_font.js     # Generated letter stroke paths (mask-reveal animation)
 ├── fonts/              # Self-hosted Andika + Playwrite woff2
 ├── tools/              # Stroke-generation pipeline (Python)
@@ -60,7 +61,7 @@ Or open `index.html` directly in a browser.
 
 ## Code health (2026-09-19 audit)
 
-- **Regression suite, 35 checks** (headless chromium + real `change` events, results read via `--dump-dom`): all four sections × case × style · 5 guide styles + Sky·Grass·Mud tile aspect · `practice=0` · long-sentence / no-space-word wrapping · cells-per-row font scaling · dictation mode · stroke modal · localStorage · horizontal overflow · JS errors. Print layout is tested separately by forcing the `@media print` rules on at A4 width: no overflow.
+- **Regression suite, 44 checks** (headless chromium + real `change` events, results read via `--dump-dom`): all four sections × case × style · 5 guide styles + Sky·Grass·Mud tile aspect · `practice=0` · long-sentence / no-space-word wrapping · cells-per-row font scaling · dictation mode · stroke modal · localStorage · horizontal overflow · JS errors · caoni font switch (both fonts: size fills the cell, family applied, CSS vars written) · dotted tracing. Print layout is tested separately by forcing the `@media print` rules on at A4 width: no overflow.
 - **Fixed smells**: Divergent Change + Long Method (`renderWorksheet` 175 lines → orchestrator + 4 section builders) · Duplicated Code (word/sentence rows → `lineBlockHtml`) · Speculative Generality (unused params) · Dead Code (CSS left over from the removed "Advanced" panel).
 - **Accepted by design**: single `index.html`, no build step (Large Class is the deliberate trade-off); `splitToFitLine()` 4 params; cross-file duplication with chineseword — the two sites are separate deployments, and shared helpers are deliberately small (`jsArg`, guide SVG).
 

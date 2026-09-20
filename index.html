@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>English Word Practice — Handwriting Worksheet (Print & Cursive · A4)</title>
-<link href="fonts/hand.css?v=andika3" rel="stylesheet">
+<link href="fonts/hand.css?v=caoni4" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>✏️</text></svg>">
 <style>
 :root {
@@ -246,27 +246,50 @@ body {
 .guide-blank .cell-guides { display: none; }
 /* 天草泥三色模板：彩色底上導線同描紅字母要加深少少先睇到 */
 .guide-caoni { --guide-line: #8FB4D0; --guide-tint: #A8C4D8; }
-/* 天草泥：print 大楷要頂到上外框（原本 cap-ink 頂喺 18.5%，離框太遠）。
-   只放大字級，同時修正 margin-bottom 令基線照樣鎖死（實測同一格／行內大楷 vs 小楷基線差 <0.1px）：
-     baselineY = layerBottom − margin − k·fs（實測 k = 0.111）
-     → margin_cap = margin0 − 0.111·fs0·(cap−1) = margin0 − 0.0406·fs0
-   所以每條規則都寫成「原本嗰條 margin 表達式 − 大楷修正項」，改 base margin 都唔會走樣。
-   小楷唔動：x-height 仍然 32%（留喺草區）；cursive 本身 cap 1.02em 已經貼頂，唔使改。
-   ⚠️ 順序：sentence 規則一定要排喺 word-line 之後（同 specificity，後者勝）。 */
-.guide-caoni .hw-cell .glyph-layer span.print.caoni-cap {
-  font-size: calc(var(--cell-font) * var(--caoni-cap, 1.366));
-  margin-bottom: calc(var(--cell-font) * 0.2275 - 1px
-                       - var(--cell-font) * 0.111 * (var(--caoni-cap, 1.366) - 1));
+/* 天草泥：字塊已經由 1% 填到 99%，頂線/底線會橫穿字母 → 只留天空/草、草/泥兩條界線 */
+.guide-caoni .cell-guides line.g-top,
+.guide-caoni .cell-guides line.g-bottom { display: none; }
+/* ===== 天草泥 print 模板（字體 = Edu AU VIC WA NT Pre，只喺天草泥模式用；四線格模式仍然 Andika）=====
+   Pre 實測 metric：升部 0.93（h/b/d/k/l）· x-height 0.51 · 尾 0.43 · cap 0.92 · t 0.81
+     → 升部:x-height:尾 = 1.82 : 1 : 0.84（理想 2:1:1），所以三區只需 31.3 / 36.7 / 32.0 ≈ 原圖 1/3
+   成塊字（升部頂→尾底 = 1.36em）填滿成格、上下各留 1% → 字級 0.7206 格高、基線 68.0%、天空/草界 31.3%
+   大楷倍數 = asc/cap = 1.011（Pre 嘅 cap 同升部一樣高，唔使點放大）
+   小楷 t 倍數 = asc/tAsc = 1.148（t 頭同 h 頭並齊）
+   基線公式：baseline = layerBottom − margin − k·fs（Pre 實測 k = 0.082）
+     → cells: margin = 0.111H − 1.4px；word/sentence: margin = 0.261 × 行高 − 2px
+   ⚠️ 一定要用 #worksheet.guide-caoni（ID＋class）先壓得住 .word-line / .sentence-block 嘅 base 規則；
+      同 specificity 時順序決定 → sentence 規則要排喺 word-line 之後。
+   cursive 唔改（Playwrite 1.76:1:0.90 → 29/38/34，本身啱原圖三等分）。 */
+#worksheet.guide-caoni .glyph-layer span.print { font-family: var(--caoni-print-fam, "EduPre"), "Segoe UI", sans-serif; }
+/* 描紅點點版：EduDots（同 Pre 同形）＋ EduPre 做 fallback —— Dots 只有字母/數字，冇標點 */
+#worksheet.guide-caoni.dotted-trace .glyph-layer span.guide-glyph.print {
+  font-family: "EduDots", "EduPre", "Segoe UI", sans-serif;
 }
-.guide-caoni .word-line .glyph-layer span.print.caoni-cap {
-  font-size: calc(var(--cell-font) * 0.75 * var(--caoni-cap, 1.366));
-  margin-bottom: calc(var(--cell-practice, 96px) * 0.75 * 0.2956 - 1px
-                       - var(--cell-font) * 0.75 * 0.111 * (var(--caoni-cap, 1.366) - 1));
+#worksheet.guide-caoni .hw-cell .glyph-layer {
+  --cg-fs: calc(var(--cell-font) * var(--cg-fs-mult, 1.126));
+  --cg-mb: calc(var(--cell-practice, 96px) * (0.85 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.126) * 0.64) - 1.4px);
 }
-.guide-caoni .sentence-block .glyph-layer span.print.caoni-cap {
-  font-size: calc(var(--cell-font) * 0.5 * var(--caoni-cap, 1.366));
-  margin-bottom: calc(var(--cell-practice, 96px) * 0.5 * 0.2956 - 1px
-                       - var(--cell-font) * 0.5 * 0.111 * (var(--caoni-cap, 1.366) - 1));
+#worksheet.guide-caoni .word-line .glyph-layer {
+  --cg-fs: calc(var(--cell-font) * 0.75 * var(--cg-fs-mult, 1.126));
+  --cg-mb: calc(var(--cell-practice, 96px) * 0.75 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.126) * 0.64) - 2px);
+}
+#worksheet.guide-caoni .sentence-block .glyph-layer {
+  --cg-fs: calc(var(--cell-font) * 0.5 * var(--cg-fs-mult, 1.126));
+  --cg-mb: calc(var(--cell-practice, 96px) * 0.5 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.126) * 0.64) - 2px);
+  --cg-cap-adj: var(--caoni-cap-adj5, 1);   /* 0.5× 行細，cap 圓頭 overshoot 比例唔同 → 補償 */
+}
+#worksheet.guide-caoni .glyph-layer span.print {
+  font-size: var(--cg-fs);
+  margin-bottom: var(--cg-mb);
+}
+#worksheet.guide-caoni .glyph-layer span.print.caoni-cap {
+  --cg-cap: calc(var(--caoni-cap, 1.011) * var(--cg-cap-adj, 1));
+  font-size: calc(var(--cg-fs) * var(--cg-cap));
+  margin-bottom: calc(var(--cg-mb) - var(--cg-fs) * var(--cg-k, 0.082) * (var(--cg-cap) - 1));
+}
+#worksheet.guide-caoni .glyph-layer span.print.caoni-t {
+  font-size: calc(var(--cg-fs) * var(--caoni-t, 1.148));
+  margin-bottom: calc(var(--cg-mb) - var(--cg-fs) * var(--cg-k, 0.082) * (var(--caoni-t, 1.148) - 1));
 }
 
 /* ===== PRACTICE ROWS ===== */
@@ -560,6 +583,12 @@ body {
       </div>
       <div class="opt-group">
         <div class="toggle-row"><input type="checkbox" id="optGuide" checked><label for="optGuide">Light tracing guide 淺色描紅</label></div>
+        <div class="toggle-row"><input type="checkbox" id="optDotted"><label for="optDotted">Dotted tracing 點點描紅（天草泥）</label></div>
+        <div class="toggle-row"><label for="optCaoniFont" style="flex:0 0 auto">天草泥字體 Caoni font</label>
+          <select id="optCaoniFont" style="flex:1">
+            <option value="edupre" selected>Edu AU VIC WA NT Pre（比例最貼 1/3）</option>
+            <option value="andika">Andika（原本字體）</option>
+          </select></div>
       </div>
       <div class="opt-group">
         <div class="toggle-row"><input type="checkbox" id="optDedup" checked><label for="optDedup">Deduplicate letters 字母去重</label></div>
@@ -611,7 +640,7 @@ body {
     <div id="wsFooter">
       <div class="wsf-block">
         <div class="wsf-title">Sources &amp; credits 資料來源與聲明</div>
-        <div class="wsf-row"><span class="wsf-label">Typefaces 字體</span>Andika · Playwrite USA Trad — SIL Open Font License (OFL)</div>
+        <div class="wsf-row"><span class="wsf-label">Typefaces 字體</span>Andika (4-line grid 四線格) · Edu AU VIC WA NT Pre (Sky·Grass·Mud 天草泥) · Playwrite USA Trad (cursive) — SIL Open Font License (OFL)</div>
         <div class="wsf-row"><span class="wsf-label">Sky·Grass·Mud 天草泥</span>The three-band (sky / grass / mud) visual-cue concept comes from the「天草泥格線印章教材套」teaching set by the occupational therapy team at 協康會 Heep Hong Society; the guide lines here are an independent teaching adaptation.</div>
         <div class="wsf-row"><span class="wsf-label">Disclaimer 聲明</span>Unofficial teaching aid — not affiliated with, sponsored by, or endorsed by the organisations above. Third-party names and materials remain the property of their respective owners. 本網站為非官方教學輔助工具，與上述機構並無隸屬或合作關係。A4 portrait recommended for printing.</div>
       </div>
@@ -678,6 +707,8 @@ document.addEventListener('DOMContentLoaded', () => {
       if (saved.accent) document.getElementById('optAccent').value = saved.accent;
       if (saved.section) document.getElementById('optSection').value = saved.section;
       document.getElementById('optGuide').checked = saved.guide !== false;
+      document.getElementById('optDotted').checked = saved.dotted === true;
+      if (saved.caoniFont) document.getElementById('optCaoniFont').value = saved.caoniFont;
       document.getElementById('optShowHeader').checked = saved.showHeader !== false;
       document.getElementById('optDedup').checked = saved.dedup !== false;
       if (saved.title) document.getElementById('optTitle').value = saved.title;
@@ -692,7 +723,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Eager font warm-up — same lesson as chineseword: swap+preload so the
   // handwriting fonts render immediately instead of falling back to system
   // fonts on first paint (esp. before print/PDF).
-  preloadFonts(['Andika', 'Playwrite']);
+  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite']);
   // wait for the real glyphs, then re-render so baseline alignment uses
   // the actual font metrics (fallback → webfont changes the ink box)
   document.fonts.ready.then(() => { setTimeout(() => { if (document.querySelector('.demo-glyph')) generate(); }, 30); });
@@ -844,6 +875,8 @@ function generate() {
       accent: document.getElementById('optAccent').value,
       section: document.getElementById('optSection').value,
       guide: document.getElementById('optGuide').checked,
+      dotted: document.getElementById('optDotted').checked,
+      caoniFont: document.getElementById('optCaoniFont').value,
       showHeader: document.getElementById('optShowHeader').checked,
       dedup: document.getElementById('optDedup').checked,
       title: document.getElementById('optTitle').value,
@@ -885,6 +918,8 @@ function generate() {
     style: document.getElementById('optStyle').value || 'print',
     case_: document.getElementById('optCase').value || 'both',
     guide: document.getElementById('optGuide').checked,
+    dotted: document.getElementById('optDotted').checked,
+    caoniFont: document.getElementById('optCaoniFont').value,
     showHeader: document.getElementById('optShowHeader').checked,
     title: document.getElementById('optTitle').value || 'English Handwriting Practice',
     name: document.getElementById('optName').value
@@ -914,17 +949,60 @@ function generate() {
 //    唔夠闊就橫向平鋪（奇數塊鏡射，接縫自然）。aspect=1（正方字母格）時 = 原本 300，一行三格重組原圖 ✓。
 var CAONI_ACTIVE = false;
 var CAONI_IMG = true;
-var CAONI_XH = 31.5;   // 天空/草 界線（= x-height line；print 32.7 / cursive 31.7，取 31.5 令兩種字體嘅小楷身都留喺草區）
-var CAONI_BASE = 65;   // 草/泥 界線（= 基線）
-var CAONI_CAP = 1.366; // print 大楷放大倍數（cap-ink 頂由 18.5% 提到 ~1%，貼上外框；基線仍然 65%）。改呢個數會連 CSS margin 公式一齊生效（applyGuideStyle 寫入 --caoni-cap）
+// 天草泥模板比例 —— 兩個字體嘅真實 metric 差好遠，所以分開兩套（每格跟自己嗰隻字體畫）：
+//   Andika（print 正寫）：升部 0.80（f）· x-height 0.51 · 尾 0.24 · cap 0.72 · t 0.65
+//   Playwrite（cursive）：升部 1.02 · x-height 0.52 · 尾 0.52 · cap 1.02 · t 0.73
+// 算法：成塊字（升部頂 → 尾底）填滿成格、上下各留 1% → 字級 = 0.98/(升部+尾)、基線 = 0.01 + 升部×字級
+//   print  ：字級 0.9423 格高 → 天空 28.3 / 草 48.1 / 泥 23.6（基線 76.4）
+//   cursive：字級 0.6364 格高 → 天空 32.8 / 草 33.1 / 泥 34.1（基線 65.9）≈ 原本三等分原圖 ✓ 所以 cursive 唔改
+// 天草泥可選 print 字體。每隻字體有自己嘅 metric，三區比例／字級／基線全部由 metric 自動調節。
+//   asc/xh/desc/cap/tAsc = 實測渲染比例（同一 app 內量 inkTop/inkBot ÷ font-size；唔好用 bare canvas
+//     掃描 —— 之前就係咁樣拿到偏大嘅 Andika 數字，令三個色帶都錯位）
+//   k   = 有效基線偏移比（app 內實測：span content-box 底往上 k·fs 就係基線。注意唔等於字體
+//         nominal descent —— 受 line-height 影響，所以每隻字體要實測一次；影響 margin 公式）
+//   trace = 對應嘅描紅點點版字體（null = 冇，只可以用實線）
+var CAONI_FONTS = {
+  edupre: { label: 'Edu AU VIC WA NT Pre', fam: 'EduPre', trace: 'EduDots',
+            asc: 0.9395, xh: 0.506, desc: 0.434, cap: 0.930, tAsc: 0.818, k: 0.082, capAdj5: 0.975 },
+  andika: { label: 'Andika', fam: 'Andika', trace: null,
+            asc: 0.696, xh: 0.475, desc: 0.221, cap: 0.666, tAsc: 0.566, k: 0.156, capAdj5: 0.975 }
+};
+var CAONI_FONT = 'edupre';        // 由選項 optCaoniFont 決定（預設 Pre：比例最貼 1/3）
+var CAONI_PRINT_FAM = CAONI_FONTS[CAONI_FONT].fam;
+var CAONI_METRIC = {
+  // print 由 CAONI_FONTS 提供（見 caoniGeo）；cursive = Playwrite USA Trad（唔改）
+  cursive: { asc: 1.02, xh: 0.52, desc: 0.52, cap: 1.02, tAsc: 0.73, k: 0.085 }
+};
+function caoniGeo(st) {
+  const m = st === 'cursive' ? CAONI_METRIC.cursive : CAONI_FONTS[CAONI_FONT];
+  const fs = 0.98 / (m.asc + m.desc);                 // 字級（× 格高）
+  const base = 0.01 + m.asc * fs;                     // 基線（%）→ 草/泥界
+  return { m, fs: fs * 100, base: base * 100, xh: (base - m.xh * fs) * 100 };
+}
+var CAONI_XH = +caoniGeo('print').xh.toFixed(1);     // print：天空/草 界線（= x-height line，由 metric 推）
+var CAONI_BASE = +caoniGeo('print').base.toFixed(1); // print：草/泥 界線（= 基線，由 metric 推）
+// 全部由 metric 推導：大楷頂貼框 → 倍數 = asc/cap；t 頭同 h 並齊 → 倍數 = asc/tAsc
+// 跟當前字體即時計（applyGuideStyle 會寫入 CSS var）
+var CAONI_FS = 1, CAONI_CAP = 1, CAONI_T = 1;
+const CAONI_CURSIVE = { xh: 31.5, base: 65 };   // cursive 沿用原圖三等分（baseline 校準唔改，唔想有回歸）
+const CAONI_CELL_W = 0.90;   // 正方格內可用闊度（em，已扣 2px 邊框）——大楷闊過呢個數要縮返入格
 
-// 天草泥模式 print 大楷逐隻包 span.caoni-cap（CSS 放大字級 + 修正 margin 保住基線）。
-// 小楷唔動（x-height 照樣留喺草區）；cursive 唔使（Playwrite cap 本身 1.02em 已經頂到框）。
+// 量一隻字喺 Andika 嘅闊度（em）
+let _wCv = null;
+function charWidthEm(ch, fam) {
+  if (!_wCv) _wCv = document.createElement('canvas').getContext('2d');
+  _wCv.font = '100px ' + (fam || CAONI_PRINT_FAM);
+  return _wCv.measureText(ch).width / 100;
+}
+
+// 天草泥 print 大楷逐隻包 span.caoni-cap、t 包 span.caoni-t（CSS 放大字級 + 修正 margin 保住基線）。
+// 只有 print 要（Playwrite 本身 cap 1.02em 已經貼框；cursive 細楷一放大就會斷開連筆）。
 // 空格轉 &nbsp;：flex item 嘅前導空格會被丟棄（實測 span(" cat") 少 17px，字會黏埋）。
-function glyphSpansHtml(text, st, baseCls) {
+function glyphSpansHtml(text, st, baseCls, opts) {
   const t = String(text == null ? '' : text);
   const cls = baseCls + ' ' + st;
-  if (!(CAONI_ACTIVE && st === 'print' && /[A-Z]/.test(t))) {
+  const need = CAONI_ACTIVE && st === 'print';
+  if (!(need && /[A-Z]|t/.test(t))) {
     return `<span class="${cls}">${esc(t)}</span>`;
   }
   let html = '', run = '';
@@ -934,9 +1012,16 @@ function glyphSpansHtml(text, st, baseCls) {
     run = '';
   };
   for (const ch of t) {
-    if (ch >= 'A' && ch <= 'Z') {
+    const isCap = ch >= 'A' && ch <= 'Z';
+    if (isCap || ch === 't') {
       flush();
-      html += `<span class="${cls} caoni-cap">${esc(ch)}</span>`;
+      // 正方格：過闊嘅大楷（W 1.016em）縮到啱啱放得落，其餘照 CAONI_CAP
+      let style = '';
+      if (isCap && opts && opts.cell) {
+        const wEm = charWidthEm(ch);
+        if (wEm > CAONI_CELL_W) style = ` style="--caoni-cap:${(CAONI_CAP * CAONI_CELL_W / wEm).toFixed(3)}"`;
+      }
+      html += `<span class="${cls} ${isCap ? 'caoni-cap' : 'caoni-t'}"${style}>${esc(ch)}</span>`;
     } else {
       run += ch;
     }
@@ -945,20 +1030,30 @@ function glyphSpansHtml(text, st, baseCls) {
   return html;
 }
 
-function caoniTiles(slice, aspect) {
-  const wU = Math.max(12, 300 / Math.max(1, aspect));   // 單位：每塊圖嘅闊度（height 永遠 100 = 格高）
+// 原圖內部界線實測：234px 高、界線喺 y=77 / 154 → 32.9% / 65.8%
+var CAONI_ART = { a1: 0.3291, a2: 0.6560 };
+// 計一個 y/height 令原圖嗰兩條線啱啱落喺天草泥嘅天空/草、草/泥界線（唔使切片）
+function caoniArtPlacement(xh, base) {
+  const h = (base - xh) / (CAONI_ART.a2 - CAONI_ART.a1);
+  return { y: +(xh - CAONI_ART.a1 * h).toFixed(2), h: +h.toFixed(2) };
+}
+
+// 平鋪原圖（可用 y/height 移位縮放去對準色帶界線）
+function caoniTiles(slice, aspect, y, h) {
+  y = y || 0; h = h || 100;
+  const wU = Math.max(12, 300 / Math.max(1, aspect));   // 每塊圖單位闊度（基準：100 units 高 × 300/aspect 闊）
   const start = -100 * (slice || 0);
   const k0 = Math.floor((0 - start) / wU) - 1;
   const k1 = Math.ceil((100 - start) / wU) + 1;
-  const w = +wU.toFixed(2);
+  const w = +wU.toFixed(2), Y = +y.toFixed(2), H = +h.toFixed(2);
   let out = '';
   for (let k = k0; k <= k1; k++) {
     const x = +(start + k * wU).toFixed(2);
     if (((k % 2) + 2) % 2) {   // 奇數塊鏡射 → 平鋪接縫唔會有硬邊
-      out += `<g transform="translate(${+(x + wU).toFixed(2)},0) scale(-1,1)">`
-           + `<image href="caoni-bg.jpg" x="0" y="0" width="${w}" height="100" preserveAspectRatio="none"/></g>`;
+      out += `<g transform="translate(${+(x + wU).toFixed(2)},${Y}) scale(-1,1)">`
+           + `<image href="caoni-bg.jpg" x="0" y="0" width="${w}" height="${H}" preserveAspectRatio="none"/></g>`;
     } else {
-      out += `<image href="caoni-bg.jpg" x="${x}" y="0" width="${w}" height="100" preserveAspectRatio="none"/>`;
+      out += `<image href="caoni-bg.jpg" x="${x}" y="${Y}" width="${w}" height="${H}" preserveAspectRatio="none"/>`;
     }
   }
   return out;
@@ -976,37 +1071,48 @@ function fitCaoniPatterns(root) {
     const key = aspect.toFixed(2) + '|' + slice;
     if (art.dataset.fit === key) return;   // 已經鋪好同一個比例
     art.dataset.fit = key;
-    art.innerHTML = caoniTiles(slice, aspect);
+    art.innerHTML = caoniTiles(slice, aspect, +art.dataset.y || 0, +art.dataset.h || 100);
   });
 }
 
-function caoniPattern(slice) {
+function caoniPattern(slice, st) {
   const s = slice || 0;
-  const xh = CAONI_XH, base = CAONI_BASE;
+  // cursive 用原圖三等分（CAONI_CURSIVE），print 用 Pre 嘅 metric 界線（CAONI_XH/CAONI_BASE）。
+  // 兩者都只係「一張原圖 + 一個 y/height 位移縮放」，令原圖內部兩條線啱啱落喺色帶界線（唔使切片）。
+  const cur = st === 'cursive';
+  const xh = cur ? CAONI_CURSIVE.xh : CAONI_XH;
+  const base = cur ? CAONI_CURSIVE.base : CAONI_BASE;
+  const pl = caoniArtPlacement(xh, base);
+  const f = v => +(+v).toFixed(1);
   if (!CAONI_IMG) {          // 只有顏色
     return `<g class="caoni-bg">` +
-      `<rect width="100" height="${xh}" fill="#D9EAF7"/>` +
-      `<rect y="${xh}" width="100" height="${base - xh}" fill="#E3F2DD"/>` +
-      `<rect y="${base}" width="100" height="${100 - base}" fill="#F1E7D8"/>` +
+      `<rect width="100" height="${f(xh)}" fill="#D9EAF7"/>` +
+      `<rect y="${f(xh)}" width="100" height="${f(base - xh)}" fill="#E3F2DD"/>` +
+      `<rect y="${f(base)}" width="100" height="${f(100 - base)}" fill="#F1E7D8"/>` +
       `</g>`;
   }
   return `<g class="caoni-bg">` +
-    `<g class="caoni-art" data-slice="${s}">${caoniTiles(s, 1)}</g>` +
-    `<rect width="100" height="${xh}" fill="#CFE6FA" fill-opacity="0.45"/>` +
-    `<rect y="${xh}" width="100" height="${base - xh}" fill="#D9EFCF" fill-opacity="0.45"/>` +
-    `<rect y="${base}" width="100" height="${100 - base}" fill="#EFDFC4" fill-opacity="0.45"/>` +
+    `<g class="caoni-art" data-band="${cur ? 'cursive' : 'print'}" data-slice="${s}" data-y="${pl.y}" data-h="${pl.h}">` +
+    caoniTiles(s, 1, pl.y, pl.h) + `</g>` +
+    `<rect width="100" height="${f(xh)}" fill="#CFE6FA" fill-opacity="0.45"/>` +
+    `<rect y="${f(xh)}" width="100" height="${f(base - xh)}" fill="#D9EFCF" fill-opacity="0.45"/>` +
+    `<rect y="${f(base)}" width="100" height="${f(100 - base)}" fill="#EFDFC4" fill-opacity="0.45"/>` +
     `</g>`;
 }
-function guideSvg(slice) {
+function guideSvg(slice, st) {
   // 4-line handwriting grid: top, dashed midline, baseline, bottom
   // viewBox 0-100: top 5, mid 38, base 65, bottom 96
-  // caoni 模式：中線移去真實 x-height（31.5），同天空/草色帶界線疊埋一齊
-  const midY = CAONI_ACTIVE ? CAONI_XH : 38;
+  // caoni 模式：中線/baseline 移去真實 metric 位置（同天空/草、草/泥色帶界線疊埋一齊）
+  const cur = st === 'cursive';
+  const g = caoniGeo(st);
+  const midY = CAONI_ACTIVE ? (cur ? CAONI_CURSIVE.xh : g.xh) : 38;
+  const baseY = CAONI_ACTIVE ? (cur ? CAONI_CURSIVE.base : g.base) : 65;
+  const fmt = v => (+v.toFixed(1));
   return `<svg class="cell-guides" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">` +
-    (CAONI_ACTIVE ? caoniPattern(slice) : '') +
+    (CAONI_ACTIVE ? caoniPattern(slice, st) : '') +
     `<line class="g-top" x1="2" y1="5" x2="98" y2="5"/>` +
-    `<line class="g-midline" x1="2" y1="${midY}" x2="98" y2="${midY}"/>` +
-    `<line class="g-baseline" x1="2" y1="65" x2="98" y2="65"/>` +
+    `<line class="g-midline" x1="2" y1="${fmt(midY)}" x2="98" y2="${fmt(midY)}"/>` +
+    `<line class="g-baseline" x1="2" y1="${fmt(baseY)}" x2="98" y2="${fmt(baseY)}"/>` +
     `<line class="g-bottom" x1="2" y1="96" x2="98" y2="96"/>` +
     `</svg>`;
 }
@@ -1022,24 +1128,26 @@ function lineFitCapacity() {
   return Math.max(160, Math.round(inner * 0.88));
 }
 
-function splitToFitLine(text, fontPx, families, maxPx) {
+function splitToFitLine(text, fonts, maxPx) {
   text = String(text == null ? '' : text);
   const ctx = document.createElement('canvas').getContext('2d');
-  // 天草泥 print 大楷會放大（CAONI_CAP）→ 量度要跟，否則句子會爆出格。
+  // 天草泥 print 大楷/t 會放大（CAONI_CAP / CAONI_T）→ 量度要跟，否則句子會爆出格。
+  // fonts = [{ f: 字體名, px: 該字體實際字級 }]（print/cursive 字級唔同，要分開量）。
   // 放大時逐字加總（同 render 一樣係逐隻 span，冇 kerning，所以更貼實況）。
   const widest = s => {
     let m = 0;
-    families.forEach(f => {
-      const cap = (CAONI_ACTIVE && f === 'Andika') ? CAONI_CAP : 1;
-      if (cap === 1) {
-        ctx.font = fontPx + 'px ' + f;
+    fonts.forEach(fo => {
+      const cap = (CAONI_ACTIVE && fo.f === CAONI_PRINT_FAM) ? CAONI_CAP : 1;
+      const tSc = (CAONI_ACTIVE && fo.f === CAONI_PRINT_FAM) ? CAONI_T : 1;
+      if (cap === 1 && tSc === 1) {
+        ctx.font = fo.px + 'px ' + fo.f;
         m = Math.max(m, ctx.measureText(s).width);
         return;
       }
       let w = 0;
       for (const ch of s) {
-        const big = ch >= 'A' && ch <= 'Z';
-        ctx.font = (big ? fontPx * cap : fontPx) + 'px ' + f;
+        const mult = (ch >= 'A' && ch <= 'Z') ? cap : (ch === 't' ? tSc : 1);
+        ctx.font = (mult === 1 ? fo.px : fo.px * mult) + 'px ' + fo.f;
         w += ctx.measureText(ch).width;
       }
       m = Math.max(m, w);
@@ -1086,8 +1194,8 @@ function letterSectionHtml(o, ctx) {
 
     html += `<div class="letter-card"><div class="letter-info"><div class="letter-demo">`;
     variants.forEach(v => ctx.styles.forEach(st => {
-      html += `<div class="hw-cell" style="margin-bottom:6px;">${guideSvg()}` +
-        `<div class="glyph-layer">${glyphSpansHtml(v, st, 'demo-glyph')}</div></div>`;
+      html += `<div class="hw-cell" style="margin-bottom:6px;">${guideSvg(undefined, st)}` +
+        `<div class="glyph-layer">${glyphSpansHtml(v, st, 'demo-glyph', { cell: true })}</div></div>`;
     }));
     html += `</div><div class="letter-details">`;
     html += `<div class="letter-name">${esc(ch.toUpperCase())} <small>letter 字母 ${esc(ch)}</small></div>`;
@@ -1115,8 +1223,13 @@ function letterSectionHtml(o, ctx) {
 // 詞語行／句子行係同一結構，分別只在塊 class、行高、字級比例、layer class
 // （原本兩段近乎逐行重複 = Duplicated Code）。cfg = { text, note, blockCls, fontScale, wrapStyle, layerCls, layerStyle }
 function lineBlockHtml(o, ctx, cfg) {
-  const fontPx = (SIZE_PX[o.size] || 96) * 0.64 * cfg.fontScale;
-  const chunks = splitToFitLine(cfg.text, fontPx, ctx.families, lineFitCapacity());
+  const base = SIZE_PX[o.size] || 96;
+  // 天草泥各字體字級唔同（print 0.942 / cursive 0.636 格高）→ 逐個字體用自己嘅字級量闊度
+  const fonts = ctx.styles.map((st, i) => ({
+    f: ctx.families[i],
+    px: base * (CAONI_ACTIVE ? caoniGeo(st).fs / 100 : 0.64) * cfg.fontScale
+  }));
+  const chunks = splitToFitLine(cfg.text, fonts, lineFitCapacity());
   const wrapStyle = cfg.wrapStyle || '';
   const layerCls = cfg.layerCls ? ' ' + cfg.layerCls : '';
   const layerStyle = cfg.layerStyle || '';
@@ -1130,7 +1243,7 @@ function lineBlockHtml(o, ctx, cfg) {
 
   // 示範行（每 style × 每 chunk 一行）
   ctx.styles.forEach(st => chunks.forEach(ch => {
-    html += `<div class="word-line"${wrapStyle ? ` style="${wrapStyle}"` : ''}>${guideSvg()}` +
+    html += `<div class="word-line"${wrapStyle ? ` style="${wrapStyle}"` : ''}>${guideSvg(undefined, st)}` +
       `<div class="glyph-layer${layerCls}"${layerStyle ? ` style="${layerStyle}"` : ''}>` +
       `${glyphSpansHtml(ch, st, 'demo-glyph')}</div></div>`;
   }));
@@ -1198,8 +1311,29 @@ function applyGuideStyle(ws, o) {
   st.cls.forEach(c => ws.classList.add(c));
   CAONI_ACTIVE = !!st.mode;
   CAONI_IMG = st.mode === 'img';
-  // 單一真相：JS 常數寫入 CSS var，大楷放大倍數同 margin 公式先唔會走樣
+
+  // 天草泥字體（選項）：三區比例／字級／基線全部由該字體 metric 自動計，寫入 CSS var
+  const key = CAONI_FONTS[o.caoniFont] ? o.caoniFont : 'edupre';
+  CAONI_FONT = key;
+  const F = CAONI_FONTS[key];
+  CAONI_PRINT_FAM = F.fam;
+  const g = caoniGeo('print');                       // { fs:%, base:%, xh:% }
+  CAONI_XH = +g.xh.toFixed(1);
+  CAONI_BASE = +g.base.toFixed(1);
+  CAONI_FS = +(g.fs / 100).toFixed(4);
+  CAONI_CAP = +(F.asc / F.cap).toFixed(4);           // 大楷頂貼框
+  CAONI_T = +(F.asc / F.tAsc).toFixed(4);            // t 頭同 h 並齊
+  ws.style.setProperty('--caoni-print-fam', `"${F.fam}"`);
+  ws.style.setProperty('--cg-fs-mult', (CAONI_FS / 0.64).toFixed(4));
+  ws.style.setProperty('--cg-base', (CAONI_BASE / 100).toFixed(4));
+  ws.style.setProperty('--cg-k', F.k);
   ws.style.setProperty('--caoni-cap', CAONI_CAP);
+  ws.style.setProperty('--caoni-t', CAONI_T);
+  ws.style.setProperty('--caoni-cap-adj5', F.capAdj5 || 1);
+  // 描紅點點版（EduDots）—— 只有揀到有點點孿生兄弟嘅字體先用得
+  ws.classList.toggle('dotted-trace', CAONI_ACTIVE && !!o.dotted && !!F.trace);
+  const dop = document.getElementById('optDotted');
+  if (dop) { dop.disabled = !F.trace; dop.parentElement.title = F.trace ? '' : 'Andika 冇點點版本（只有 Pre 有 Edu Dots）'; }
 }
 
 function applyHeader(o) {
@@ -1230,7 +1364,7 @@ function renderWorksheet() {
     showUpper: o.case_ === 'both' || o.case_ === 'upper',
     showLower: o.case_ === 'both' || o.case_ === 'lower'
   };
-  if (o.style === 'print' || o.style === 'both') { ctx.styles.push('print'); ctx.families.push('Andika'); }
+  if (o.style === 'print' || o.style === 'both') { ctx.styles.push('print'); ctx.families.push(CAONI_ACTIVE ? CAONI_PRINT_FAM : 'Andika'); }
   if (o.style === 'cursive' || o.style === 'both') { ctx.styles.push('cursive'); ctx.families.push('Playwrite'); }
 
   let html = letterSectionHtml(o, ctx) + wordSectionHtml(o, ctx) + sentenceSectionHtml(o, ctx);
@@ -1265,10 +1399,11 @@ function bindAutoRegenerate() {
 
 // One practice-cell builder shared by Letters/Words/Sentences (guide-glyph overlay).
 function practiceCellHtml(text, st, o2 = {}) {
-  const guideHtml = o2.guide ? glyphSpansHtml(text, st, 'guide-glyph') : '';
+  const wrap = o2.wrapCls || 'word-line';
+  const guideHtml = o2.guide ? glyphSpansHtml(text, st, 'guide-glyph', { cell: wrap.indexOf('hw-cell') === 0 }) : '';
   const wrapStyle = o2.wrapStyle ? ` style="${o2.wrapStyle}"` : '';
   const layerStyle = o2.layerStyle ? ` style="${o2.layerStyle}"` : '';
-  return `<div class="${o2.wrapCls || 'word-line'}"${wrapStyle}>${guideSvg(o2.slice)}` +
+  return `<div class="${wrap}"${wrapStyle}>${guideSvg(o2.slice, st)}` +
     `<div class="glyph-layer${o2.layerCls ? ' ' + o2.layerCls : ''}"${layerStyle}>${guideHtml}</div></div>`;
 }
 
@@ -1618,7 +1753,7 @@ function printWorksheet() {
   // Chineseword lesson: ensure fonts are fully loaded before printing.
   // If Playwrite/Andika aren't ready, print/PDF shows fallback system font.
   fitCaoniPatterns();   // 用列印版面度多次（@media print 會改格大細）
-  preloadFonts(['Andika', 'Playwrite']).then(() => { window.print(); });
+  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite']).then(() => { window.print(); });
 }
 
 // 天草泥：視窗／列印版面變咗就重新鋪圖（格嘅長闊比唔同 → 圖嘅縮放要跟）
@@ -1635,7 +1770,7 @@ window.addEventListener('afterprint', () => fitCaoniPatterns());
 // Redundant backup for slow-connection scenarios.
 // The primary load is in DOMContentLoaded (before first render).
 window.addEventListener('load', () => {
-  preloadFonts(['Andika', 'Playwrite']);
+  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite']);
 });
 
 // ===== BACK TO TOP =====

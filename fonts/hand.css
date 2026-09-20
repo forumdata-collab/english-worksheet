@@ -1,19 +1,31 @@
 /* Self-hosted handwriting fonts — no Google Fonts dependency */
-/* Print 正寫: Andika (SIL) — designed for literacy learners: upright,
-   unjoined, unambiguous letterforms (standard school print). */
+/* Print 正寫: Edu AU VIC WA NT Pre — school print form from the AU School Handwriting
+   Fonts Project (OFL). Its proportions fit the 1/3 Sky·Grass·Mud zones
+   (ascender : x-height : descender = 1.82 : 1 : 0.84; Andika was 1.54 : 1 : 0.46 and
+   could never fill them). cap height = ascender height → capitals and ascenders reach
+   the top line together. */
 @font-face {
-  font-family: 'Andika';
+  font-family: 'EduPre';
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(andika-400.woff2) format('woff2');
+  src: url(edupre-400.woff2) format('woff2');
 }
 @font-face {
-  font-family: 'Andika';
+  font-family: 'EduPre';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(andika-400.woff2) format('woff2');
+  src: url(edupre-400.woff2) format('woff2');
+}
+/* Tracing 描紅（可選點點版）: Edu AU VIC WA NT Dots — Pre 同一字形但用點畫成。
+   只有字母＋數字（冇標點）→ 字體鏈一定要配 EduPre：font-family:"EduDots","EduPre",… */
+@font-face {
+  font-family: 'EduDots';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(edudots-400.woff2) format('woff2');
 }
 /* Cursive 草寫: Playwrite USA Trad (school cursive engine, OFL) */
 @font-face {
