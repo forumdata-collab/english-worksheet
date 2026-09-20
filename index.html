@@ -1334,7 +1334,10 @@ function lineFitCapacity() {
   //      螢幕每行字數 = inner / 螢幕字級；列印每行字數 = 703px / 列印字級
   //    字級 ∝ 格大小（兩邊都係「格 × 0.64 × fontScale × 天草泥倍數」，倍數相同會約掉）
   //    → 只需比較格大小。
-  if (currentOptions && currentOptions.wrap === 'screen') return Math.round(inner);   // 螢幕優先（列印可能超邊界）
+  // ⚠️ wrap 選項唔可以改變拆行容量：HTML 同時服務螢幕同列印，拆行必須以
+  //    兩者都唔溢出為準（取較嚴嘅列印容量）。若跟「螢幕優先」用 full inner，
+  //    列印時同一個 chunk 會超紙邊（螢幕字級 > 列印字級，chunk 在列印更闊），
+  //    結果列印版每行被裁切、留大量空白。screen 選項只係「列印可能超邊界」嘅提示。
   const sizePx = SIZE_PX[(currentOptions || {}).size] || 96;
   const printPx = printCellPx(currentOptions);
   const ratio = Math.min(1, (PRINT_INNER_PX * sizePx) / (inner * printPx));
@@ -1465,7 +1468,8 @@ function lineBlockHtml(o, ctx, cfg) {
     f: ctx.families[i],
     px: base * (CAONI_ACTIVE ? caoniGeo(st).fs / 100 : 0.64) * cfg.fontScale
   }));
-  const chunks = splitToFitLine(cfg.text, fonts, lineFitCapacity());
+  const inner = Math.max(160, (document.getElementById('wsContent')?.clientWidth || 904) - 8);
+  const chunks = splitToFitLine(cfg.text, fonts, cfg.isSentence ? Math.round(inner) : lineFitCapacity());
   const wrapStyle = cfg.wrapStyle || '';
   const layerCls = cfg.layerCls ? ' ' + cfg.layerCls : '';
   const layerStyle = cfg.layerStyle || '';
