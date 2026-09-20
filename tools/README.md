@@ -17,18 +17,40 @@ through a mask of centreline paths derived from those same glyphs.
    see "Capture" below — and save the JSON to `/tmp/glyphs/raw.json`.
    Each entry: `{data: <base64 PNG>, w, h, ox, oy}` where `ox/oy` is the crop
    origin in em units relative to (glyph centre, baseline).
+   Two traps that silently produce garbage:
+   - `document.fonts.ready` resolves immediately when no font has been *requested*
+     yet, so the canvas would draw a **fallback** font. You must `await
+     document.fonts.load('400px "EduPre"', CHARS)` for every family first, then
+     assert `document.fonts.check(...)` before drawing. (A whole metric table was
+     wrong once because of this.)
+   - Keys must be a **flat** dict `{"print_A": …, "curs_a": …}`: `pipeline.py` splits
+     on the first `_`, and `finalcheck.py` wants the prefixes `print_` / `curs_`
+     (not `cursive_`).
 2. `python3 tools/pipeline.py` — skeletonise, prune spurs, clump junction pixels,
    merge collinear edges, simplify, order → `/tmp/glyphs/paths.json`
-   (tune `PRUNE_F`; 0.05 works for both styles).
+   (`PRUNE_F = 0.13` is the current default and passes the coverage gate.)
 3. `python3 tools/group.py` — group segments into teaching strokes so the red
    numbers show the school stroke count → `/tmp/glyphs/grouped.json`
    (edit `IDEAL_PRINT` / `IDEAL_CURSIVE` to change the expected counts).
 4. `python3 tools/emit.py` — smooth (Catmull-Rom → cubic Bézier) and write
-   `strokes_font.js`. Copy it into the project root.
-5. `python3 tools/finalcheck.py` — **must** report ~100% mask coverage. Anything
-   below ~99.9% means part of the glyph would never be revealed: raise
-   `STROKE_WIDTH_EM` (0.20em covers 103/104 letters; 0.26em covers all) or lower
-   `PRUNE_F`.
+   `/tmp/glyphs/strokes_font.js`. `WIDTH_EM = 0.30` (0.20em left 6 letters below
+   99.9%; 0.30em brings every print letter to 100% and the worst cursive letter to
+   99.8%). Copy the result into the project root.
+5. `python3 tools/finalcheck.py` — **must** report ~100% mask coverage. It reads the
+   stroke width from the emitted file (not a hard-coded constant), so verification
+   always matches what ships. Anything below ~99.9% means part of the glyph would
+   never be revealed: raise `WIDTH_EM` in `emit.py` (and re-run step 4).
+
+### Two print datasets live in one file
+
+`strokes_font.js` holds `print` (Andika → 4-line grid), `print_pre`
+(Edu AU VIC WA NT Pre → Sky·Grass·Mud when *Pre* is the selected caoni font) and
+`cursive` (Playwrite). `strokeDataKey()` in `index.html` picks between them; the
+Show modal's glyph font and cap ratio switch with it (`EduPre` cap 0.92 vs Andika
+0.72). To regenerate only the Pre set: capture the rasters with
+`FAM = { print: 'EduPre', cursive: 'Playwrite' }`, run steps 2–4, then take the
+emitted `print` block and store it as `print_pre` in the repo file (keep the other
+two blocks untouched — that is what `/tmp/engtest/merge_strokes.py` does).
 
 Dependencies: `numpy scikit-image scipy pillow fonttools` (a venv is fine).
 

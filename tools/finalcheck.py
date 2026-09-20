@@ -1,10 +1,13 @@
-import base64, io, json
+import base64, io, json, re
 import numpy as np
 from PIL import Image, ImageDraw
 
 EM = 400
 raw = json.load(open('/tmp/glyphs/raw.json'))
 paths = json.load(open('/tmp/glyphs/paths.json'))
+# 用 emit 實際寫入嘅筆寬（唔好硬編，否則驗證同出貨唔一致）
+_src = open('/tmp/glyphs/strokes_font.js').read()
+WIDTH_EM = float(re.search(r'STROKE_WIDTH_EM = ([\d.]+)', _src).group(1)) if 'STROKE_WIDTH_EM' in _src else 0.20
 
 
 def glyph(key):
@@ -22,7 +25,7 @@ for style, pref in (('print', 'print'), ('cursive', 'curs')):
         h, w = m.shape
         img = Image.new('L', (w, h), 0)
         d = ImageDraw.Draw(img)
-        lw = max(2, round(0.20 * EM))
+        lw = max(2, round(WIDTH_EM * EM))
         r = lw / 2
         for st in strokes:
             pts = [((x - e['ox']) * EM, (y - e['oy']) * EM) for x, y in st]
@@ -35,7 +38,7 @@ for style, pref in (('print', 'print'), ('cursive', 'curs')):
         worst.append((float(cov), f'{style} {ch}'))
 
 worst.sort()
-print('worst 8 coverage (mask width 0.20em, final paths):')
+print(f'worst 8 coverage (mask width {WIDTH_EM}em, final paths):')
 for c, n in worst[:8]:
     print(f'   {n:12s} {c*100:.3f}%')
 print(f'letters below 99.9%: {sum(1 for c, _ in worst if c < 0.999)} / {len(worst)}')

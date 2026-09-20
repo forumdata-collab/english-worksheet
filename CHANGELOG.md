@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-09-20 — v1.11
+
+### Fixed
+- **`fonts/hand.css` 漏咗 Andika `@font-face`**（v1.10 換字體時誤刪，回滾只做咗 index.html）→ 四線格模式一直靜靜用系統 fallback 字體渲染。已補回兩個 weight（400/700）＋ 加註警告。**同時推翻 v1.10 對 Andika 嘅「metric 修正」**：當時量到嘅 0.696 / 0.475 / 0.221 / 0.666 / 0.566 其實係 fallback 嘅數字，真 Andika 係 **0.800 / 0.520 / 0.240 / 0.720 / 0.650**（k 亦由 0.156 返 0.085）—— 即係原本 canvas 掃描冇錯，錯嘅係我以為佢錯。
+- 補返字體後實測：caoni + Andika 大楷頂 **1.09%**、h 2.33%、t 0.49%、g 尾 **98.17%**、基線 76.3%（同 v1.9 設計一致）。
+
+### Added
+- **Pre 版筆順骨架數據**：`strokes_font.js` 現在有第三組 `print_pre`（52 字母，由 Edu AU VIC WA NT Pre 真實字形重跑 `tools/pipeline.py → group.py → emit.py`）。Show modal 用 `strokeDataKey()` 自動揀：**天草泥 + Pre → `print_pre` + EduPre 字形 + cap ratio 0.92**；四線格 → `print` + Andika + 0.72。之前動畫用 Andika 筆形去遮 Pre 字，字形唔夾。
+- 遮罩筆寬 `STROKE_WIDTH_EM` 0.20 → **0.30**：`finalcheck.py` 由 6 隻 <99.9%（最差 cursive I 98.15%）改善到 **print 全部 100%、最差 cursive I 99.81%**。`finalcheck.py` 改為讀 emit 實際寫入嘅筆寬，唔再硬編 0.20（否則驗證同出貨唔一致）。
+
+### Removed
+- **清走 26 個未用嘅候選字體／字型源檔**（caveat、kalam、handlee、neucha、patrick_hand、gochi_hand、short_stack、coming_soon、edu 各州變體、eduqld、andika.ttf 等，約 1.8MB）→ `fonts/` 只剩實際引用嘅 5 個：andika-400、edupre-400、edudots-400、playwrite-400、playwrite-700（＋hand.css）。備份喺 `/tmp/engword_fonts_backup/`。
+
+### Notes
+- Arial 實測（Linux 上 `Arial` 由 Liberation Sans 代，兩者 metric 兼容）：升部 0.73 · x-height 0.54 · 尾 0.21 · cap 0.69 · t 0.65 → **1.35 : 1 : 0.39 → 三區 20/57/22**，比 Andika（27/50/23）離 1/3 更遠。用同一套填滿格機制係可以做到「大楷貼頂、尾貼底」，但代價係草區佔 57%、原圖要縱向拉 1.7 倍；加上 Arial 係 Monotype 商業字體（公開站自 host 有授權問題）、`l` 同 `I` 幾乎分唔開（維基百科明講），唔適合做 copybook 字體。
+
 ## 2026-09-20 — v1.10
 
 ### Added

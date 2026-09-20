@@ -1,9 +1,25 @@
 /* Self-hosted handwriting fonts — no Google Fonts dependency */
-/* Print 正寫: Edu AU VIC WA NT Pre — school print form from the AU School Handwriting
-   Fonts Project (OFL). Its proportions fit the 1/3 Sky·Grass·Mud zones
-   (ascender : x-height : descender = 1.82 : 1 : 0.84; Andika was 1.54 : 1 : 0.46 and
-   could never fill them). cap height = ascender height → capitals and ascenders reach
-   the top line together. */
+/* Print 正寫（四線格 standard 模式）: Andika (SIL) — literacy-friendly upright print.
+   ⚠️ 呢個 @font-face 唔可以刪：冇咗嘅話 'Andika' 會靜靜咁 fallback 去系統字體，
+      四線格模式嘅字同 metric 全部唔同晒（曾經換字體時誤刪，要 git 追返）。 */
+@font-face {
+  font-family: 'Andika';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(andika-400.woff2) format('woff2');
+}
+@font-face {
+  font-family: 'Andika';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(andika-400.woff2) format('woff2');
+}
+/* Print 正寫（天草泥模式可選）: Edu AU VIC WA NT Pre — school print form from the AU School
+   Handwriting Fonts Project (OFL). Its proportions fit the 1/3 Sky·Grass·Mud zones
+   (ascender : x-height : descender = 1.8 : 1 : 0.85); cap height = ascender height →
+   capitals and ascenders reach the top line together. */
 @font-face {
   font-family: 'EduPre';
   font-style: normal;

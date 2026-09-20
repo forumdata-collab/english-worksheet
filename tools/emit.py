@@ -9,7 +9,8 @@ reveal lines up with the text EXACTLY by construction.
 import json
 
 PRUNE_F = 0.05
-WIDTH_EM = 0.20
+# 0.20em 蓋到 103/104 隻字；0.26em 全部 ~100%（finalcheck 要求 ~100%）
+WIDTH_EM = 0.30
 
 
 def catmull_rom(pts, closed=False):

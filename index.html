@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>English Word Practice — Handwriting Worksheet (Print & Cursive · A4)</title>
-<link href="fonts/hand.css?v=caoni4" rel="stylesheet">
+<link href="fonts/hand.css?v=caoni5" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>✏️</text></svg>">
 <style>
 :root {
@@ -963,9 +963,9 @@ var CAONI_IMG = true;
 //   trace = 對應嘅描紅點點版字體（null = 冇，只可以用實線）
 var CAONI_FONTS = {
   edupre: { label: 'Edu AU VIC WA NT Pre', fam: 'EduPre', trace: 'EduDots',
-            asc: 0.9395, xh: 0.506, desc: 0.434, cap: 0.930, tAsc: 0.818, k: 0.082, capAdj5: 0.975 },
+            asc: 0.930, xh: 0.510, desc: 0.430, cap: 0.920, tAsc: 0.810, k: 0.082, capAdj5: 0.975 },
   andika: { label: 'Andika', fam: 'Andika', trace: null,
-            asc: 0.696, xh: 0.475, desc: 0.221, cap: 0.666, tAsc: 0.566, k: 0.156, capAdj5: 0.975 }
+            asc: 0.800, xh: 0.520, desc: 0.240, cap: 0.720, tAsc: 0.650, k: 0.085, capAdj5: 0.975 }
 };
 var CAONI_FONT = 'edupre';        // 由選項 optCaoniFont 決定（預設 Pre：比例最貼 1/3）
 var CAONI_PRINT_FAM = CAONI_FONTS[CAONI_FONT].fam;
@@ -1482,9 +1482,22 @@ function openStroke(ch, navList) {
   updateStrokeNav();
 }
 
+// Show modal 要跟住「而家睇緊邊隻字」：天草泥 + Pre 時，骨架數據同字形都要用 Pre，
+// 否則動畫會用 Andika 嘅筆形去遮 Pre 嘅字（字形唔夾）。
+function strokeDataKey(style) {
+  if (style === 'print' && CAONI_ACTIVE && CAONI_FONT === 'edupre'
+      && typeof LETTER_PATHS !== 'undefined' && LETTER_PATHS.print_pre) return 'print_pre';
+  return style;
+}
+function strokeFont(style) {
+  if (style === 'cursive') return '"Playwrite", cursive';
+  const f = (CAONI_ACTIVE && CAONI_FONTS[CAONI_FONT]) ? CAONI_FONTS[CAONI_FONT] : CAONI_FONTS.andika;
+  return '"' + f.fam + '", "Andika", "Segoe UI", sans-serif';
+}
 function strokePathsFor(style, ch) {
-  if (typeof LETTER_PATHS === 'undefined' || !LETTER_PATHS[style]) return null;
-  return LETTER_PATHS[style][ch] || null;
+  const key = strokeDataKey(style);
+  if (typeof LETTER_PATHS === 'undefined' || !LETTER_PATHS[key]) return null;
+  return LETTER_PATHS[key][ch] || null;
 }
 
 // Cap height of the letter inside the Show box, in viewBox units. The four-line
@@ -1495,7 +1508,9 @@ const SB_CAP_UNITS = 46;
 const SB_BASELINE = 65;
 
 function strokeFontSize(style) {
-  const capRatio = style === 'cursive' ? 1.02 : 0.72;   // measured in-browser
+  // cap ratio（每隻字體唔同）：cursive = Playwrite 1.02；print 跟當前天草泥字體，四線格就 Andika 0.72
+  const capRatio = style === 'cursive' ? CAONI_METRIC.cursive.cap
+    : ((CAONI_ACTIVE && CAONI_FONTS[CAONI_FONT]) ? CAONI_FONTS[CAONI_FONT].cap : CAONI_FONTS.andika.cap);
   return SB_CAP_UNITS / capRatio;
 }
 
@@ -1525,7 +1540,7 @@ function buildStrokeSvg(svg, ch, paths, style) {
     '<line x1="0" y1="96" x2="100" y2="96" stroke="#C3D6E8"/>';
   svg.appendChild(gl);
 
-  const fam = style === 'cursive' ? '"Playwrite", cursive' : '"Andika", "Segoe UI", sans-serif';
+  const fam = strokeFont(style);
   const FS = strokeFontSize(style);
   const uid = 'sbMask' + (++_sbUid);
 
