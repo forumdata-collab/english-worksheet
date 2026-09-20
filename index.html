@@ -457,7 +457,9 @@ body {
   @page { margin: 12mm; size: A4; }
   body { background: white !important; }
   .screen-only, .hero, .print-bar, .modal-overlay, .audio-toast,
-  .no-print, .back-to-top, .footer-links { display: none !important; }
+  .no-print, .back-to-top, .footer-links, .options { display: none !important; }
+  /* 工作紙上面嘅互動手掣（🔊 / ✍ Show 筆順）都唔應該印出嚟 */
+  .btn-ghost, .letter-actions, .word-info button { display: none !important; }
   #worksheet {
     box-shadow: none; margin: 0; padding: 0; max-width: none; background: white;
     --cell-practice: var(--print-cell-practice, 2.2cm) !important;

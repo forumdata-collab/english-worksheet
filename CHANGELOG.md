@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-09-20 — v1.15
+
+### Fixed — 列印時唔應該顯示嘅嘢（用戶報：「列印時不需要把 Layout 版面的選項顯示出來」）
+- **選項面板會跟住印出嚟** ✗：`.options` 唔在 `@media print` 嘅隱藏清單 → 開住面板列印會印出「Options 選項 / Content / Guides / Layout / Reset 重設…」成個表單。已加入隱藏清單。
+- **工作紙上嘅互動手掣都印** ✗：🔊 / ✍ Show 筆順（`.btn-ghost` / `.letter-actions` / `.word-info button`）→ 已加 `display:none !important`。文字標籤（如「the 3 letters」）保留。
+- 驗證方法（可重用）：`chromium --print-to-pdf` + `pypdf` 抽文字 → 斷言面板字串全部唔出現、工作紙字串仍在（`/tmp/engtest/test_print_panel.py`）；另用 CDP `Emulation.setEmulatedMedia('print')` 查 computed display。
+
 ## 2026-09-20 — v1.14
 
 ### Changed — 選項面板排版邏輯重構（用戶要求「深度整理」，全做）
