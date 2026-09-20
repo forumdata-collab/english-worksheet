@@ -260,7 +260,11 @@ body {
    ⚠️ 一定要用 #worksheet.guide-caoni（ID＋class）先壓得住 .word-line / .sentence-block 嘅 base 規則；
       同 specificity 時順序決定 → sentence 規則要排喺 word-line 之後。
    cursive 唔改（Playwrite 1.76:1:0.90 → 29/38/34，本身啱原圖三等分）。 */
-#worksheet.guide-caoni .glyph-layer span.print { font-family: var(--caoni-print-fam, "EduPre"), "Segoe UI", sans-serif; }
+#worksheet.guide-caoni .glyph-layer span.print {
+  font-family: var(--caoni-print-fam, "EduPre"), "Segoe UI", sans-serif;
+  /* Playwrite 系當印刷體用要 calt 關（唔連筆）；其他字體 = normal */
+  font-feature-settings: var(--caoni-print-feat, normal);
+}
 /* 描紅點點版：EduDots（同 Pre 同形）＋ EduPre 做 fallback —— Dots 只有字母/數字，冇標點 */
 #worksheet.guide-caoni.dotted-trace .glyph-layer span.guide-glyph.print {
   font-family: "EduDots", "EduPre", "Segoe UI", sans-serif;
@@ -587,6 +591,7 @@ body {
         <div class="toggle-row"><label for="optCaoniFont" style="flex:0 0 auto">天草泥字體 Caoni font</label>
           <select id="optCaoniFont" style="flex:1">
             <option value="edupre" selected>Edu AU VIC WA NT Pre（比例最貼 1/3）</option>
+            <option value="pwusm">Playwrite US Modern（最貼 1/3，偏離 7.3）</option>
             <option value="andika">Andika（原本字體）</option>
           </select></div>
       </div>
@@ -723,7 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Eager font warm-up — same lesson as chineseword: swap+preload so the
   // handwriting fonts render immediately instead of falling back to system
   // fonts on first paint (esp. before print/PDF).
-  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite']);
+  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite', 'PWUSM']);
   // wait for the real glyphs, then re-render so baseline alignment uses
   // the actual font metrics (fallback → webfont changes the ink box)
   document.fonts.ready.then(() => { setTimeout(() => { if (document.querySelector('.demo-glyph')) generate(); }, 30); });
@@ -962,8 +967,12 @@ var CAONI_IMG = true;
 //         nominal descent —— 受 line-height 影響，所以每隻字體要實測一次；影響 margin 公式）
 //   trace = 對應嘅描紅點點版字體（null = 冇，只可以用實線）
 var CAONI_FONTS = {
-  edupre: { label: 'Edu AU VIC WA NT Pre', fam: 'EduPre', trace: 'EduDots',
+  edupre: { label: 'Edu AU VIC WA NT Pre', fam: 'EduPre', trace: 'EduDots', dataKey: 'print_pre',
             asc: 0.930, xh: 0.510, desc: 0.430, cap: 0.920, tAsc: 0.810, k: 0.082, capAdj5: 0.975 },
+  // Playwrite US Modern：同一家族嘅「現代」美式草寫，用 calt 關當印刷體。三區偏離 1/3 只 7.3（Pre 8.9）
+  // 實測值（app 內 ink ÷ font-size；calt 關之後同字檔嘅 bbox 差好遠，一定要咁量）
+  pwusm: { label: 'Playwrite US Modern', fam: 'PWUSM', trace: null, caltOff: true,
+           asc: 0.9404, xh: 0.5309, desc: 0.4550, cap: 0.9380, tAsc: 0.7353, k: 0.0485, capAdj5: 0.975 },
   andika: { label: 'Andika', fam: 'Andika', trace: null,
             asc: 0.800, xh: 0.520, desc: 0.240, cap: 0.720, tAsc: 0.650, k: 0.085, capAdj5: 0.975 }
 };
@@ -1324,6 +1333,7 @@ function applyGuideStyle(ws, o) {
   CAONI_CAP = +(F.asc / F.cap).toFixed(4);           // 大楷頂貼框
   CAONI_T = +(F.asc / F.tAsc).toFixed(4);            // t 頭同 h 並齊
   ws.style.setProperty('--caoni-print-fam', `"${F.fam}"`);
+  ws.style.setProperty('--caoni-print-feat', F.caltOff ? "'calt' 0" : 'normal');
   ws.style.setProperty('--cg-fs-mult', (CAONI_FS / 0.64).toFixed(4));
   ws.style.setProperty('--cg-base', (CAONI_BASE / 100).toFixed(4));
   ws.style.setProperty('--cg-k', F.k);
@@ -1482,16 +1492,25 @@ function openStroke(ch, navList) {
   updateStrokeNav();
 }
 
-// Show modal 要跟住「而家睇緊邊隻字」：天草泥 + Pre 時，骨架數據同字形都要用 Pre，
-// 否則動畫會用 Andika 嘅筆形去遮 Pre 嘅字（字形唔夾）。
+// Show modal 要跟住「而家睇緊邊隻字」：天草泥 + 有自己骨架數據嘅字體（EduPre）要用佢自己嘅
+// 數據同字形，否則動畫會用 Andika 筆形去遮另一隻字（字形唔夾）。
+// ⚠️ 冇對應數據嘅字體（例如 Playwrite US Modern —— canvas 捉唔到 calt 關嘅字形）就整套用 Andika：
+//    字形同遮罩一致 > 同工作紙一致。
 function strokeDataKey(style) {
-  if (style === 'print' && CAONI_ACTIVE && CAONI_FONT === 'edupre'
-      && typeof LETTER_PATHS !== 'undefined' && LETTER_PATHS.print_pre) return 'print_pre';
+  if (style === 'print' && CAONI_ACTIVE && CAONI_FONTS[CAONI_FONT] && CAONI_FONTS[CAONI_FONT].dataKey
+      && typeof LETTER_PATHS !== 'undefined' && LETTER_PATHS[CAONI_FONTS[CAONI_FONT].dataKey]) {
+    return CAONI_FONTS[CAONI_FONT].dataKey;
+  }
   return style;
+}
+function strokeFontEntry(style) {
+  if (style === 'cursive') return null;
+  const F = CAONI_FONTS[CAONI_FONT];
+  return (CAONI_ACTIVE && F && F.dataKey && strokeDataKey('print') !== 'print') ? F : CAONI_FONTS.andika;
 }
 function strokeFont(style) {
   if (style === 'cursive') return '"Playwrite", cursive';
-  const f = (CAONI_ACTIVE && CAONI_FONTS[CAONI_FONT]) ? CAONI_FONTS[CAONI_FONT] : CAONI_FONTS.andika;
+  const f = strokeFontEntry(style) || CAONI_FONTS.andika;
   return '"' + f.fam + '", "Andika", "Segoe UI", sans-serif';
 }
 function strokePathsFor(style, ch) {
@@ -1508,9 +1527,9 @@ const SB_CAP_UNITS = 46;
 const SB_BASELINE = 65;
 
 function strokeFontSize(style) {
-  // cap ratio（每隻字體唔同）：cursive = Playwrite 1.02；print 跟當前天草泥字體，四線格就 Andika 0.72
+  // cap ratio（每隻字體唔同）：cursive = Playwrite 1.02；print 跟「實際用嘅字形」（見上）
   const capRatio = style === 'cursive' ? CAONI_METRIC.cursive.cap
-    : ((CAONI_ACTIVE && CAONI_FONTS[CAONI_FONT]) ? CAONI_FONTS[CAONI_FONT].cap : CAONI_FONTS.andika.cap);
+    : ((strokeFontEntry(style) || CAONI_FONTS.andika).cap);
   return SB_CAP_UNITS / capRatio;
 }
 
@@ -1768,7 +1787,7 @@ function printWorksheet() {
   // Chineseword lesson: ensure fonts are fully loaded before printing.
   // If Playwrite/Andika aren't ready, print/PDF shows fallback system font.
   fitCaoniPatterns();   // 用列印版面度多次（@media print 會改格大細）
-  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite']).then(() => { window.print(); });
+  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite', 'PWUSM']).then(() => { window.print(); });
 }
 
 // 天草泥：視窗／列印版面變咗就重新鋪圖（格嘅長闊比唔同 → 圖嘅縮放要跟）
@@ -1785,7 +1804,7 @@ window.addEventListener('afterprint', () => fitCaoniPatterns());
 // Redundant backup for slow-connection scenarios.
 // The primary load is in DOMContentLoaded (before first render).
 window.addEventListener('load', () => {
-  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite']);
+  preloadFonts(['Andika', 'EduPre', 'EduDots', 'Playwrite', 'PWUSM']);
 });
 
 // ===== BACK TO TOP =====

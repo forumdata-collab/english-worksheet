@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-09-20 — v1.13
+
+### Added
+- **天草泥第三隻字體：Playwrite US Modern**（選項 `天草泥字體`）。掃完 Google Fonts **全部 357 個 Handwriting 家族**之後，佢係唯一比 Edu Pre 更貼 1/3 而又用得嘅：三區 **30.7 / 36.5 / 32.8（偏離 1/3 只 6.3）**，Pre 係 8.9、Andika 31.9。（真正最貼嘅係 Hurricane / Pinyon Script / Ingrid Darling 等書法字，偏離 2.0，但唔可能做 copybook。）實測：大楷頂 **0.36–2.35%**、h 頂 0.53%、t 頂 0.65%、身頂 30.74%（貼天空/草線）、g 尾 **99.49%**、零溢出。
+- Playwrite 係 cursive 家族 → 當印刷體用要 **`font-feature-settings:'calt' 0`**（唔連筆）。已加 `--caoni-print-feat` CSS var，由字體表嘅 `caltOff` 控制。
+- metric 全部**喺 app 內實測反推**（calt 關之後同字檔 bbox 差好遠）：asc 0.9404 · xh 0.5309 · desc 0.4550 · cap 0.9380 · tAsc 0.7353 · k 0.0485。
+
+### Notes
+- **呢隻字體冇筆順骨架數據**（canvas 捉唔到 calt 關嘅字形，DOM 擷取未做）→ Show modal 加咗守衛：字體表有 `dataKey`（EduPre → `print_pre`）就用自己一套，否則**整套回落 Andika**（字形同遮罩一致 > 同工作紙一致）。EduPre 照舊用 `print_pre` ✓
+- 回歸 **52 → 56 項**（+3 隻字體字級/字體/--cg-base 斷言、+1 PWUSM modal 回退斷言）。
+
 ## 2026-09-20 — v1.12
 
 ### Fixed
