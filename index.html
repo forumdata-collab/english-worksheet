@@ -1344,7 +1344,12 @@ function lineFitCapacity() {
   //    窄螢幕若真的有溢出，CSS 已讓 .word-line 可橫向捲動，列印不受影響。
   const sizePx = SIZE_PX[(currentOptions || {}).size] || 96;
   const printPx = printCellPx(currentOptions);
-  return Math.max(160, Math.round(PRINT_INNER_PX * sizePx / printPx));
+  const printCap = Math.max(160, Math.round(PRINT_INNER_PX * sizePx / printPx));
+  // ⚠️ 「螢幕優先」分支唔可以低過列印容量：手機螢幕只有 360–430px，
+  //    若直接返回 inner（螢幕闊度），短句會被拆成 3 段（用戶實測報告）。
+  //    只有螢幕比列印容量更闊（桌面）時，screen 模式才真正放寬。
+  if ((currentOptions || {}).wrap === 'screen') return Math.max(printCap, inner);
+  return printCap;   // 預設：以列印為依歸
 }
 
 function splitToFitLine(text, fonts, maxPx) {
