@@ -246,6 +246,28 @@ body {
 .guide-blank .cell-guides { display: none; }
 /* 天草泥三色模板：彩色底上導線同描紅字母要加深少少先睇到 */
 .guide-caoni { --guide-line: #8FB4D0; --guide-tint: #A8C4D8; }
+/* 天草泥：print 大楷要頂到上外框（原本 cap-ink 頂喺 18.5%，離框太遠）。
+   只放大字級，同時修正 margin-bottom 令基線照樣鎖死（實測同一格／行內大楷 vs 小楷基線差 <0.1px）：
+     baselineY = layerBottom − margin − k·fs（實測 k = 0.111）
+     → margin_cap = margin0 − 0.111·fs0·(cap−1) = margin0 − 0.0406·fs0
+   所以每條規則都寫成「原本嗰條 margin 表達式 − 大楷修正項」，改 base margin 都唔會走樣。
+   小楷唔動：x-height 仍然 32%（留喺草區）；cursive 本身 cap 1.02em 已經貼頂，唔使改。
+   ⚠️ 順序：sentence 規則一定要排喺 word-line 之後（同 specificity，後者勝）。 */
+.guide-caoni .hw-cell .glyph-layer span.print.caoni-cap {
+  font-size: calc(var(--cell-font) * var(--caoni-cap, 1.366));
+  margin-bottom: calc(var(--cell-font) * 0.2275 - 1px
+                       - var(--cell-font) * 0.111 * (var(--caoni-cap, 1.366) - 1));
+}
+.guide-caoni .word-line .glyph-layer span.print.caoni-cap {
+  font-size: calc(var(--cell-font) * 0.75 * var(--caoni-cap, 1.366));
+  margin-bottom: calc(var(--cell-practice, 96px) * 0.75 * 0.2956 - 1px
+                       - var(--cell-font) * 0.75 * 0.111 * (var(--caoni-cap, 1.366) - 1));
+}
+.guide-caoni .sentence-block .glyph-layer span.print.caoni-cap {
+  font-size: calc(var(--cell-font) * 0.5 * var(--caoni-cap, 1.366));
+  margin-bottom: calc(var(--cell-practice, 96px) * 0.5 * 0.2956 - 1px
+                       - var(--cell-font) * 0.5 * 0.111 * (var(--caoni-cap, 1.366) - 1));
+}
 
 /* ===== PRACTICE ROWS ===== */
 .practice-row { display: flex; flex-wrap: wrap; gap: 0; margin-top: 4px; }
@@ -894,6 +916,34 @@ var CAONI_ACTIVE = false;
 var CAONI_IMG = true;
 var CAONI_XH = 31.5;   // 天空/草 界線（= x-height line；print 32.7 / cursive 31.7，取 31.5 令兩種字體嘅小楷身都留喺草區）
 var CAONI_BASE = 65;   // 草/泥 界線（= 基線）
+var CAONI_CAP = 1.366; // print 大楷放大倍數（cap-ink 頂由 18.5% 提到 ~1%，貼上外框；基線仍然 65%）。改呢個數會連 CSS margin 公式一齊生效（applyGuideStyle 寫入 --caoni-cap）
+
+// 天草泥模式 print 大楷逐隻包 span.caoni-cap（CSS 放大字級 + 修正 margin 保住基線）。
+// 小楷唔動（x-height 照樣留喺草區）；cursive 唔使（Playwrite cap 本身 1.02em 已經頂到框）。
+// 空格轉 &nbsp;：flex item 嘅前導空格會被丟棄（實測 span(" cat") 少 17px，字會黏埋）。
+function glyphSpansHtml(text, st, baseCls) {
+  const t = String(text == null ? '' : text);
+  const cls = baseCls + ' ' + st;
+  if (!(CAONI_ACTIVE && st === 'print' && /[A-Z]/.test(t))) {
+    return `<span class="${cls}">${esc(t)}</span>`;
+  }
+  let html = '', run = '';
+  const flush = () => {
+    if (!run) return;
+    html += `<span class="${cls}">${esc(run).replace(/ /g, '&nbsp;')}</span>`;
+    run = '';
+  };
+  for (const ch of t) {
+    if (ch >= 'A' && ch <= 'Z') {
+      flush();
+      html += `<span class="${cls} caoni-cap">${esc(ch)}</span>`;
+    } else {
+      run += ch;
+    }
+  }
+  flush();
+  return html;
+}
 
 function caoniTiles(slice, aspect) {
   const wU = Math.max(12, 300 / Math.max(1, aspect));   // 單位：每塊圖嘅闊度（height 永遠 100 = 格高）
@@ -975,9 +1025,25 @@ function lineFitCapacity() {
 function splitToFitLine(text, fontPx, families, maxPx) {
   text = String(text == null ? '' : text);
   const ctx = document.createElement('canvas').getContext('2d');
+  // 天草泥 print 大楷會放大（CAONI_CAP）→ 量度要跟，否則句子會爆出格。
+  // 放大時逐字加總（同 render 一樣係逐隻 span，冇 kerning，所以更貼實況）。
   const widest = s => {
     let m = 0;
-    families.forEach(f => { ctx.font = fontPx + 'px ' + f; m = Math.max(m, ctx.measureText(s).width); });
+    families.forEach(f => {
+      const cap = (CAONI_ACTIVE && f === 'Andika') ? CAONI_CAP : 1;
+      if (cap === 1) {
+        ctx.font = fontPx + 'px ' + f;
+        m = Math.max(m, ctx.measureText(s).width);
+        return;
+      }
+      let w = 0;
+      for (const ch of s) {
+        const big = ch >= 'A' && ch <= 'Z';
+        ctx.font = (big ? fontPx * cap : fontPx) + 'px ' + f;
+        w += ctx.measureText(ch).width;
+      }
+      m = Math.max(m, w);
+    });
     return m;
   };
   if (widest(text) <= maxPx) return [text];
@@ -1021,7 +1087,7 @@ function letterSectionHtml(o, ctx) {
     html += `<div class="letter-card"><div class="letter-info"><div class="letter-demo">`;
     variants.forEach(v => ctx.styles.forEach(st => {
       html += `<div class="hw-cell" style="margin-bottom:6px;">${guideSvg()}` +
-        `<div class="glyph-layer"><span class="demo-glyph ${st}">${esc(v)}</span></div></div>`;
+        `<div class="glyph-layer">${glyphSpansHtml(v, st, 'demo-glyph')}</div></div>`;
     }));
     html += `</div><div class="letter-details">`;
     html += `<div class="letter-name">${esc(ch.toUpperCase())} <small>letter 字母 ${esc(ch)}</small></div>`;
@@ -1066,7 +1132,7 @@ function lineBlockHtml(o, ctx, cfg) {
   ctx.styles.forEach(st => chunks.forEach(ch => {
     html += `<div class="word-line"${wrapStyle ? ` style="${wrapStyle}"` : ''}>${guideSvg()}` +
       `<div class="glyph-layer${layerCls}"${layerStyle ? ` style="${layerStyle}"` : ''}>` +
-      `<span class="demo-glyph ${st}">${esc(ch)}</span></div></div>`;
+      `${glyphSpansHtml(ch, st, 'demo-glyph')}</div></div>`;
   }));
 
   // 練習行 — 循環 style × chunk
@@ -1132,6 +1198,8 @@ function applyGuideStyle(ws, o) {
   st.cls.forEach(c => ws.classList.add(c));
   CAONI_ACTIVE = !!st.mode;
   CAONI_IMG = st.mode === 'img';
+  // 單一真相：JS 常數寫入 CSS var，大楷放大倍數同 margin 公式先唔會走樣
+  ws.style.setProperty('--caoni-cap', CAONI_CAP);
 }
 
 function applyHeader(o) {
@@ -1197,7 +1265,7 @@ function bindAutoRegenerate() {
 
 // One practice-cell builder shared by Letters/Words/Sentences (guide-glyph overlay).
 function practiceCellHtml(text, st, o2 = {}) {
-  const guideHtml = o2.guide ? `<span class="guide-glyph ${st}">${esc(text)}</span>` : '';
+  const guideHtml = o2.guide ? glyphSpansHtml(text, st, 'guide-glyph') : '';
   const wrapStyle = o2.wrapStyle ? ` style="${o2.wrapStyle}"` : '';
   const layerStyle = o2.layerStyle ? ` style="${o2.layerStyle}"` : '';
   return `<div class="${o2.wrapCls || 'word-line'}"${wrapStyle}>${guideSvg(o2.slice)}` +

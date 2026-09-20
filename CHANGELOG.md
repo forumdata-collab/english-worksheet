@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-09-20 — v1.8
+
+### Changed
+- **天草泥模式：print 大楷改為頂到上外框**（用戶：「大楷高度尚未到貼外框」）。之前大楷同小楷一樣字級，cap-ink 頂離上框 18.5%（浮喺天空色帶中間）。現在 print 大楷放大 **×1.366**（`--caoni-cap`，JS 常數寫入 CSS var），只放大字級**唔推高整隻字** —— 同時用 `margin_cap = margin0 − 0.111·fs₀·(cap−1)` 修正 `margin-bottom`，所以**基線照樣鎖死**（實測同一格／行內大楷 vs 小楷基線差 0.02px，列印 0.7px）。大楷 cap-ink 頂：螢幕 **18.5% → 0.85%**、A4 列印 **0.79%**。
+- **只影響 caoni / caoni-color 兩種 print 格線**：小楷唔動（x-height 仍 32%，留喺草區、唔踩上天空）；cursive 唔動（Playwrite cap 本身 1.02em 已經貼頂）；standard / dashed / blank 完全唔受影響。
+- 實作：`glyphSpansHtml()` 把每隻大寫字母包成 `span.caoni-cap`（其餘連續字元合成一段）。空格轉 `&nbsp;` —— 實測 flex item 嘅前導空格會被丟棄（`span(" cat")` 少 17px，字會黏埋）。`splitToFitLine()` 嘅量度跟住放大字級（逐字加總），否則大寫長句會爆出格。
+
+### Notes
+- 驗證（headless chromium，探針量真基線 + canvas 量 ink）：35 項回歸測試全綠（同改動前一致）；全大寫長句 × md/lg/sm × perRow × 圖案／純色 共 11 個組合**零橫向溢出**；列印版面測試（`@media print` → `@media all` @794px）無溢出、大楷貼框。
+- 已知：句子行大楷 cap-ink 頂 ≈2.3%（因為句子行自身基線比格仔低 ~1px，係原有校準，兩者都係貼住框）。
+
 ## 2026-09-19 — v1.7
 
 ### Changed
