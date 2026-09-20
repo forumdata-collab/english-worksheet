@@ -290,21 +290,30 @@ body {
   font-family: "EduDots", "EduPre", "Segoe UI", sans-serif;
 }
 #worksheet.guide-caoni .hw-cell .glyph-layer {
-  --cg-fs: calc(var(--cell-font) * var(--cg-fs-mult, 1.126));
-  --cg-mb: calc(var(--cell-practice, 96px) * (0.85 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.126) * 0.64) - 1.4px);
+  --cg-fs: calc(var(--cell-font) * var(--cg-fs-mult, 1.109));
+  --cg-mb: calc(var(--cell-practice, 96px) * (0.85 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 1.4px);
+  --cg-shift: calc(var(--cell-practice, 96px) * 0.01);
 }
 #worksheet.guide-caoni .word-line .glyph-layer {
-  --cg-fs: calc(var(--cell-font) * 0.75 * var(--cg-fs-mult, 1.126));
-  --cg-mb: calc(var(--cell-practice, 96px) * 0.75 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.126) * 0.64) - 2px);
+  --cg-fs: calc(var(--cell-font) * 0.75 * var(--cg-fs-mult, 1.109));
+  --cg-mb: calc(var(--cell-practice, 96px) * 0.75 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 2px);
+  --cg-shift: calc(var(--cell-practice, 96px) * 0.75 * 0.01);
 }
 #worksheet.guide-caoni .sentence-block .glyph-layer {
-  --cg-fs: calc(var(--cell-font) * 0.5 * var(--cg-fs-mult, 1.126));
-  --cg-mb: calc(var(--cell-practice, 96px) * 0.5 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.126) * 0.64) - 2px);
+  --cg-fs: calc(var(--cell-font) * 0.5 * var(--cg-fs-mult, 1.109));
+  --cg-mb: calc(var(--cell-practice, 96px) * 0.5 * (1 - var(--cg-base, 0.68) - var(--cg-k, 0.082) * var(--cg-fs-mult, 1.109) * 0.64) - 2px);
+  --cg-shift: calc(var(--cell-practice, 96px) * 0.5 * 0.01);
   --cg-cap-adj: var(--caoni-cap-adj5, 1);   /* 0.5× 行細，cap 圓頭 overshoot 比例唔同 → 補償 */
 }
 #worksheet.guide-caoni .glyph-layer span.print {
   font-size: var(--cg-fs);
   margin-bottom: var(--cg-mb);
+  /* 2026-09-20：大楷／升部墨頂原本喺所有 cell size 都越過頂框（xs −2.43% … lg −0.42%），
+     而 g/p/y 尾已貼 98.7% → 唔可以純下移。做法 = 字級收 1.5%（--cg-fs-mult 1.126→1.109，
+     基線由 --cg-mb 自動補償，所以字級細咗 = 墨頂下降 1.02%、尾上升 0.47%）＋統一下移 1%（--cg-shift）。
+     淨效果：墨頂 +1.1～+1.6%（留 1–2px 空隙）、尾 ~99.3%（仍然貼底框）。span 係 inline-block，top 有效且唔影響 layout。 */
+  position: relative;
+  top: var(--cg-shift, 0px);
 }
 #worksheet.guide-caoni .glyph-layer span.print.caoni-cap {
   --cg-cap: calc(var(--caoni-cap, 1.011) * var(--cg-cap-adj, 1));
@@ -1510,7 +1519,11 @@ function applyGuideStyle(ws, o) {
   CAONI_T = +(F.asc / F.tAsc).toFixed(4);            // t 頭同 h 並齊
   ws.style.setProperty('--caoni-print-fam', `"${F.fam}"`);
   ws.style.setProperty('--caoni-print-feat', F.caltOff ? "'calt' 0" : 'normal');
-  ws.style.setProperty('--cg-fs-mult', (CAONI_FS / 0.64).toFixed(4));
+  // 0.985 = 字級收 1.5%：大楷／升部墨頂原本喺所有 cell size 都穿頂框（xs −2.43% … lg −0.42%），
+  // 而 g/p/y 尾已經貼 98.7%（唔可以純下移，否則穿底框）。--cg-mb 會自動補償基線，
+  // 所以收字級 = 墨頂下降約 1.02%、尾上升約 0.47%；再加 CSS 嘅 --cg-shift（cell 高 1%）統一下移。
+  // 淨效果：墨頂 +0.4～+1.6%（留 1–2px 空隙）、尾 ~99.3%（仍然貼底框）。cursive 唔用 --cg-fs，不受影響。
+  ws.style.setProperty('--cg-fs-mult', (CAONI_FS * 0.985 / 0.64).toFixed(4));
   ws.style.setProperty('--cg-base', (CAONI_BASE / 100).toFixed(4));
   ws.style.setProperty('--cg-k', F.k);
   ws.style.setProperty('--caoni-cap', CAONI_CAP);
