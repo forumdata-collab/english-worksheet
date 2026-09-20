@@ -237,8 +237,7 @@ body {
   inset: 0;
   display: flex;
   align-items: flex-end;
-  justify-content: flex-start;
-  padding-left: calc(var(--cell-practice, 96px) * 0.05);
+  justify-content: center;
   bottom: var(--glyph-bottom, 15%);
   line-height: 1;
   z-index: 3;
@@ -363,11 +362,10 @@ body {
 }
 .word-line .glyph-layer {
   position: absolute; inset: 0; display: flex; align-items: flex-end;
-  justify-content: flex-start;
+  justify-content: center;
   /* bottom set per-font via span margin; layer itself sits at 0 */
   bottom: 0;
   line-height: 1; z-index: 3;
-  padding-left: calc(var(--cell-practice, 96px) * 0.05);
 }
 .word-line .glyph-layer span {
   display: inline-block; line-height: 1;
@@ -678,8 +676,8 @@ body {
         <div class="opt-row">
           <label for="optWrap">Sentence wrap 換行基準</label>
           <select id="optWrap">
-            <option value="print">Print 列印優先（安全）</option>
-            <option value="screen" selected>Screen 螢幕優先（列印可能超邊界）</option>
+            <option value="print" selected>Print 列印優先（安全）</option>
+            <option value="screen">Screen 螢幕優先（列印可能超邊界）</option>
           </select>
         </div>
         <div class="opt-note">換行基準：「列印優先」跟實際印刷格大小計，列印唔會超出紙邊（螢幕長句每行可能留少量空位）；「螢幕優先」填滿螢幕闊度，但列印可能超邊界。</div>
@@ -876,7 +874,7 @@ function esc(s) {
    5. 選項 id 永遠唔可以改（JS、localStorage、回歸測試都靠佢）
 */
 const OPT_DEFAULTS = {
-  optPractice: '4', optGuideStyle: 'standard', optPerRow: 'auto', optSize: 'md', optPrintSize: '2.2cm', optWrap: 'screen',
+  optPractice: '4', optGuideStyle: 'standard', optPerRow: 'auto', optSize: 'md', optPrintSize: '2.2cm', optWrap: 'print',
   optStyle: 'both', optCase: 'both', optSection: 'copybook',
   optGuide: true, optDotted: false, optCaoniFont: 'edupre', optDedup: true,
   optTitle: 'English Handwriting Practice', optName: '', optAccent: 'us', optShowHeader: true
@@ -1394,29 +1392,6 @@ function splitToFitLine(text, fonts, maxPx) {
 const BS = String.fromCharCode(92), APOS = String.fromCharCode(39);
 function jsArg(s) { return String(s).replace(/'/g, BS + APOS); }
 
-// 量度一組字（用實際字體同字級）嘅像素闊度 —— 用於「短詞同一行重複」判斷
-function measureWidth(text, fonts) {
-  const ctx = document.createElement('canvas').getContext('2d');
-  let maxW = 0;
-  fonts.forEach(fo => {
-    ctx.font = fo.px + 'px ' + fo.f;
-    const cap = (typeof CAONI_ACTIVE !== 'undefined' && CAONI_ACTIVE && fo.f === (typeof CAONI_PRINT_FAM !== 'undefined' ? CAONI_PRINT_FAM : '')) ? (typeof CAONI_CAP !== 'undefined' ? CAONI_CAP : 1) : 1;
-    const tSc = (typeof CAONI_ACTIVE !== 'undefined' && CAONI_ACTIVE && fo.f === (typeof CAONI_PRINT_FAM !== 'undefined' ? CAONI_PRINT_FAM : '')) ? (typeof CAONI_T !== 'undefined' ? CAONI_T : 1) : 1;
-    if (cap === 1 && tSc === 1) {
-      maxW = Math.max(maxW, ctx.measureText(text).width);
-    } else {
-      let w = 0;
-      for (const ch of text) {
-        const mult = (ch >= 'A' && ch <= 'Z') ? cap : (ch === 't' ? tSc : 1);
-        ctx.font = (mult === 1 ? fo.px : fo.px * mult) + 'px ' + fo.f;
-        w += ctx.measureText(ch).width;
-      }
-      maxW = Math.max(maxW, w);
-    }
-  });
-  return maxW;
-}
-
 // 每個 section 一個 builder —— 原本 renderWorksheet 175 行包辦四個 section（Long Method + Divergent Change）。
 // ctx = { accent, styles, families, showUpper, showLower }
 function letterSectionHtml(o, ctx) {
@@ -1484,26 +1459,12 @@ function lineBlockHtml(o, ctx, cfg) {
       `${glyphSpansHtml(ch, st, 'demo-glyph')}</div></div>`;
   }));
 
-  // 練習行 — 循環 style × chunk；短詞（寬度遠細於行容量）自動重複填滿整行
+  // 練習行 — 循環 style × chunk
   const pairs = [];
   ctx.styles.forEach(st => chunks.forEach(ch => pairs.push({ st, ch })));
-  const capPx = lineFitCapacity();
-  // 重複次數計算：一行除咗示範外，練習行將短詞重複 N 次（間距 = 1.2 個字級）
-  const repeatCount = (w) => {
-    if (w <= 0) return 1;
-    const gap = base * (CAONI_ACTIVE ? Math.max(0.5, caoniGeo('print').fs / 100 * 0.5) : 0.5);
-    return Math.max(1, Math.floor((capPx + gap) / (w + gap)));
-  };
   for (let r = 0; r < o.practice; r++) {
     const pr = pairs[r % pairs.length];
-    const prFonts = fonts.filter((_, i) => ctx.styles[i] === pr.st);
-    const w = measureWidth(pr.ch, prFonts);
-    let t = pr.ch;
-    if (w > 0 && !cfg.isSentence) {
-      const n = repeatCount(w);
-      if (n > 1) t = Array(n).fill(pr.ch).join('  ');   // 兩個空格做間距
-    }
-    html += practiceCellHtml(t, pr.st, { wrapStyle, layerCls: cfg.layerCls, layerStyle, guide: o.guide, slice: r % 3 });
+    html += practiceCellHtml(pr.ch, pr.st, { wrapStyle, layerCls: cfg.layerCls, layerStyle, guide: o.guide, slice: r % 3 });
   }
   return html + `</div>`;
 }
@@ -1522,7 +1483,7 @@ function sentenceSectionHtml(o, ctx) {
   let html = `<div class="ws-section-title">Sentences <span class="en-hint">句子練習</span></div>`;
   currentSentences.forEach(s => {
     html += lineBlockHtml(o, ctx, {
-      text: s, blockCls: 'sentence-block', fontScale: 0.5, isSentence: true,
+      text: s, blockCls: 'sentence-block', fontScale: 0.5,
       wrapStyle: 'height:calc(var(--cell-practice) * 0.5);',
       layerCls: 'sentence-glyph', layerStyle: 'bottom:0;'
     });
