@@ -138,22 +138,42 @@ body {
   display: none;
 }
 .options.show { display: block; }
-.opt-section { margin-bottom: 12px; }
-.opt-section h3 {
-  font-size: 0.8em; font-weight: 700; color: var(--blue);
-  margin: 0 0 8px; padding-bottom: 4px; border-bottom: 1px solid #e8f0f8;
-  letter-spacing: 0.03em;
+.opt-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+.opt-head-title { font-weight: 700; font-size: 0.9em; color: var(--blue); }
+.opt-head-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.opt-mini {
+  font: 600 0.78em/1 system-ui, -apple-system, "Noto Sans TC", sans-serif;
+  padding: 5px 10px; border: 1px solid #d8e4f0; border-radius: 999px;
+  background: #fff; color: #33506b; cursor: pointer;
 }
-.opt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
-.opt-group { display: flex; flex-direction: column; gap: 4px; }
-.opt-group label { font-size: 0.82em; color: #555; font-weight: 600; }
-.opt-group select, .opt-group input[type=number], .opt-group input[type=text] {
+.opt-mini:hover { background: #f2f7fc; }
+.opt-mini.opt-reset { color: #8a5a00; border-color: #f0dfc0; background: #fffaf0; }
+.opt-section { border-top: 1px solid #eef4fa; padding-top: 8px; margin-bottom: 10px; }
+.opt-section:first-of-type { border-top: 0; }
+.opt-section h3 {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  font-size: 0.8em; font-weight: 700; color: var(--blue);
+  margin: 0 0 8px; padding: 0 0 4px; border-bottom: 1px solid #e8f0f8;
+  letter-spacing: 0.03em; cursor: pointer; user-select: none;
+}
+.opt-sec-sub { font-weight: 500; font-size: 0.94em; color: #93a7ba; letter-spacing: 0; }
+.opt-chev { margin-left: auto; color: #9fb4c8; font-size: 0.9em; transition: transform 0.15s; }
+.opt-section.collapsed .opt-chev { transform: rotate(-90deg); }
+.opt-section.collapsed .opt-body { display: none; }
+.opt-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 9px 16px; align-items: center; }
+.opt-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.opt-row > label { flex: 0 1 auto; font-size: 0.82em; color: #555; font-weight: 600; }
+.opt-row > select, .opt-row > input[type=number], .opt-row > input[type=text] {
+  flex: 1 1 auto; min-width: 0;
   border: 1px solid #cfe0ee; border-radius: 6px; padding: 6px 8px; font-size: 0.9em; background: white;
 }
+.opt-row > input[type=checkbox] { flex: 0 0 auto; margin-left: auto; width: 16px; height: 16px; }
+.opt-row.wide { grid-column: span 2; }
+.opt-row.sub { margin-left: 10px; padding-left: 10px; border-left: 2px solid #e8f0f8; }
+.opt-note { grid-column: 1 / -1; font-size: 0.75em; color: #93a7ba; margin: -2px 0 0 2px; }
+#optionsPanel [hidden] { display: none !important; }
 .toggle-row { display: flex; align-items: center; gap: 6px; }
 .toggle-row label { font-size: 0.85em; color: #333; font-weight: 500; }
-.collapse-wrap { margin-top: 4px; }
-.advance-collapse summary { cursor: pointer; font-size: 0.82em; color: var(--blue); }
 
 /* ===== PRINT BAR ===== */
 .print-bar {
@@ -508,122 +528,160 @@ body {
 </div>
 
 <!-- OPTIONS -->
+<!-- OPTIONS -->
 <div class="options" id="optionsPanel">
-  <div class="opt-section">
-    <h3>📐 Layout 版面</h3>
-    <div class="opt-grid">
-      <div class="opt-group">
-        <label>Practice rows 練習行數（每項）</label>
-        <input type="number" id="optPractice" value="4" min="0" max="20">
-      </div>
-      <div class="opt-group">
-        <label>Guide style 格線樣式</label>
-        <select id="optGuideStyle">
-          <option value="standard" selected>Standard 4-line 標準四線格</option>
-          <option value="caoni">Sky·Grass·Mud 天草泥（圖案）</option>
-          <option value="caoni-color">Sky·Grass·Mud 天草泥（只有顏色）</option>
-          <option value="dashed">Dashed guides 虛線格</option>
-          <option value="blank">Blank 空白格</option>
-        </select>
-      </div>
-      <div class="opt-group">
-        <label>Cells per row 每行格數</label>
-        <select id="optPerRow">
-          <option value="auto" selected>Auto 自動</option>
-          <option value="4">4</option>
-          <option value="6">6</option>
-          <option value="8">8</option>
-        </select>
-      </div>
-      <div class="opt-group">
-        <label>Screen cell size 螢幕格大小</label>
-        <select id="optSize">
-          <option value="xs">Extra small 特小 (56px)</option>
-          <option value="sm">Small 小 (72px)</option>
-          <option value="md" selected>Medium 中 (96px)</option>
-          <option value="lg">Large 大 (128px)</option>
-        </select>
-      </div>
-      <div class="opt-group">
-        <label>Print cell size 印刷格大小</label>
-        <select id="optPrintSize">
-          <option value="auto">Follow screen 跟螢幕</option>
-          <option value="1.5cm">Small 小 (1.5cm)</option>
-          <option value="1.8cm">Medium 中 (1.8cm)</option>
-          <option value="2.2cm" selected>Large 大 (2.2cm 標準)</option>
-          <option value="2.6cm">Extra large 特大 (2.6cm)</option>
-        </select>
-      </div>
+  <div class="opt-head">
+    <span class="opt-head-title">⚙️ Options 選項</span>
+    <div class="opt-head-actions">
+      <button type="button" class="opt-mini" onclick="applyPreset('kindy')">🧸 幼稚園</button>
+      <button type="button" class="opt-mini" onclick="applyPreset('p1')">🎒 小一</button>
+      <button type="button" class="opt-mini" onclick="applyPreset('caoni')">🖍 天草泥</button>
+      <button type="button" class="opt-mini opt-reset" onclick="resetOptions()">↺ Reset 重設</button>
     </div>
   </div>
 
-  <div class="opt-section">
-    <h3>📝 Content 內容</h3>
-    <div class="opt-grid">
-      <div class="opt-group">
-        <label>Style 字體</label>
-        <select id="optStyle">
-          <option value="print">Print 正寫</option>
-          <option value="cursive">Cursive 草寫</option>
-          <option value="both" selected>Both 兩者</option>
-        </select>
+  <!-- ── 決策軸 1：練咩（範圍／大小寫／字體類型／去重） ── -->
+  <section class="opt-section" data-sec="content">
+    <h3>📝 Content 內容 <span class="opt-sec-sub">練咩 · 用邊種字</span><span class="opt-chev">▾</span></h3>
+    <div class="opt-body">
+      <div class="opt-grid">
+        <div class="opt-row">
+          <label for="optSection">Section 範圍</label>
+          <select id="optSection">
+            <option value="letters">Letters only 只字母</option>
+            <option value="words">Words only 只詞語</option>
+            <option value="copybook" selected>Copybook 單字＋句子</option>
+            <option value="sentences">Sentences only 淨句子</option>
+          </select>
+        </div>
+        <div class="opt-row" data-when="section=letters">
+          <label for="optCase">Case 大小寫</label>
+          <select id="optCase">
+            <option value="both" selected>Both Aa 兩者</option>
+            <option value="upper">Uppercase A 大寫</option>
+            <option value="lower">Lowercase a 小寫</option>
+          </select>
+        </div>
+        <div class="opt-row">
+          <label for="optStyle">Letter style 字體類型</label>
+          <select id="optStyle">
+            <option value="print">Print 正寫</option>
+            <option value="cursive">Cursive 草寫</option>
+            <option value="both" selected>Both 兩者</option>
+          </select>
+        </div>
+        <div class="opt-row" data-when="section=letters">
+          <label for="optDedup">Deduplicate letters 字母去重</label>
+          <input type="checkbox" id="optDedup" checked>
+        </div>
       </div>
-      <div class="opt-group">
-        <label>Case 大小寫</label>
-        <select id="optCase">
-          <option value="both" selected>Both Aa 兩者</option>
-          <option value="upper">Uppercase A 大寫</option>
-          <option value="lower">Lowercase a 小寫</option>
-        </select>
-      </div>
-      <div class="opt-group">
-        <label>Section 範圍</label>
-        <select id="optSection">
-          <option value="letters">Letters only 只字母</option>
-          <option value="words">Words only 只詞語</option>
-          <option value="copybook" selected>Copybook 單字＋句子</option>
-          <option value="sentences">Sentences only 淨句子</option>
-        </select>
-      </div>
-      <div class="opt-group">
-        <div class="toggle-row"><input type="checkbox" id="optGuide" checked><label for="optGuide">Light tracing guide 淺色描紅</label></div>
-        <div class="toggle-row"><input type="checkbox" id="optDotted"><label for="optDotted">Dotted tracing 點點描紅（天草泥）</label></div>
-        <div class="toggle-row"><label for="optCaoniFont" style="flex:0 0 auto">天草泥字體 Caoni font</label>
-          <select id="optCaoniFont" style="flex:1">
+    </div>
+  </section>
+
+  <!-- ── 決策軸 2：點顯示（格線 + 天草泥子選項綁埋一齊） ── -->
+  <section class="opt-section" data-sec="guides">
+    <h3>🖍 Guides 格線 <span class="opt-sec-sub">點顯示 · 描紅</span><span class="opt-chev">▾</span></h3>
+    <div class="opt-body">
+      <div class="opt-grid">
+        <div class="opt-row">
+          <label for="optGuideStyle">Grid style 格線樣式</label>
+          <select id="optGuideStyle">
+            <option value="standard" selected>Standard 4-line 標準四線格</option>
+            <option value="caoni">Sky·Grass·Mud 天草泥（圖案）</option>
+            <option value="caoni-color">Sky·Grass·Mud 天草泥（只有顏色）</option>
+            <option value="dashed">Dashed guides 虛線格</option>
+            <option value="blank">Blank 空白格</option>
+          </select>
+        </div>
+        <div class="opt-row">
+          <label for="optGuide">Light tracing 淺色描紅</label>
+          <input type="checkbox" id="optGuide" checked>
+        </div>
+        <div class="opt-row sub" data-when="guide=caoni|caoni-color">
+          <label for="optCaoniFont">天草泥字體 Caoni font</label>
+          <select id="optCaoniFont">
             <option value="edupre" selected>Edu AU VIC WA NT Pre（比例最貼 1/3）</option>
-            <option value="pwusm">Playwrite US Modern（最貼 1/3，偏離 7.3）</option>
+            <option value="pwusm">Playwrite US Modern（最貼 1/3，偏離 6.3）</option>
             <option value="andika">Andika（原本字體）</option>
-          </select></div>
-      </div>
-      <div class="opt-group">
-        <div class="toggle-row"><input type="checkbox" id="optDedup" checked><label for="optDedup">Deduplicate letters 字母去重</label></div>
+          </select>
+        </div>
+        <div class="opt-row sub" data-when="guide=caoni|caoni-color">
+          <label for="optDotted">Dotted tracing 點點描紅</label>
+          <input type="checkbox" id="optDotted">
+        </div>
+        <div class="opt-note" data-when="guide=caoni|caoni-color">↑ 天草泥專屬：字體會自動調整三區比例；點點描紅要揀有「點點版」嘅字體。</div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="opt-section">
-    <h3>📄 Page 頁面</h3>
-    <div class="opt-grid">
-      <div class="opt-group">
-        <label>Worksheet title 工作紙標題</label>
-        <input type="text" id="optTitle" value="English Handwriting Practice" placeholder="Worksheet title 工作紙標題">
-      </div>
-      <div class="opt-group">
-        <label>Name 姓名</label>
-        <input type="text" id="optName" value="" placeholder="Student name 學生姓名">
-      </div>
-      <div class="opt-group">
-        <label>Accent 口音</label>
-        <select id="optAccent">
-          <option value="us" selected>US English 美式英語</option>
-          <option value="uk">UK English 英式英語</option>
-        </select>
-      </div>
-      <div class="opt-group">
-        <div class="toggle-row"><input type="checkbox" id="optShowHeader" checked><label for="optShowHeader">Show title &amp; info 顯示標題資訊</label></div>
+  <!-- ── 決策軸 3：版面（行數／格數／大小） ── -->
+  <section class="opt-section" data-sec="layout">
+    <h3>📐 Layout 版面 <span class="opt-sec-sub">行數 · 格數 · 大細</span><span class="opt-chev">▾</span></h3>
+    <div class="opt-body">
+      <div class="opt-grid">
+        <div class="opt-row">
+          <label for="optPractice">Practice rows 練習行數</label>
+          <input type="number" id="optPractice" value="4" min="0" max="20">
+        </div>
+        <div class="opt-row" data-when="section=letters">
+          <label for="optPerRow">Cells per row 每行格數</label>
+          <select id="optPerRow">
+            <option value="auto" selected>Auto 自動</option>
+            <option value="4">4</option>
+            <option value="6">6</option>
+            <option value="8">8</option>
+          </select>
+        </div>
+        <div class="opt-row">
+          <label for="optSize">Screen cell size 螢幕格</label>
+          <select id="optSize">
+            <option value="xs">Extra small 特小 (56px)</option>
+            <option value="sm">Small 小 (72px)</option>
+            <option value="md" selected>Medium 中 (96px)</option>
+            <option value="lg">Large 大 (128px)</option>
+          </select>
+        </div>
+        <div class="opt-row">
+          <label for="optPrintSize">Print cell size 印刷格</label>
+          <select id="optPrintSize">
+            <option value="auto">Follow screen 跟螢幕</option>
+            <option value="1.5cm">Small 小 (1.5cm)</option>
+            <option value="1.8cm">Medium 中 (1.8cm)</option>
+            <option value="2.2cm" selected>Large 大 (2.2cm 標準)</option>
+            <option value="2.6cm">Extra large 特大 (2.6cm)</option>
+          </select>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- ── 決策軸 4：頁面（標題／姓名／顯示／語音） ── -->
+  <section class="opt-section" data-sec="page">
+    <h3>📄 Page 頁面 <span class="opt-sec-sub">標題 · 姓名 · 語音</span><span class="opt-chev">▾</span></h3>
+    <div class="opt-body">
+      <div class="opt-grid">
+        <div class="opt-row wide">
+          <label for="optTitle">Worksheet title 工作紙標題</label>
+          <input type="text" id="optTitle" value="English Handwriting Practice" placeholder="Worksheet title 工作紙標題">
+        </div>
+        <div class="opt-row wide">
+          <label for="optName">Name 姓名</label>
+          <input type="text" id="optName" value="" placeholder="Student name 學生姓名">
+        </div>
+        <div class="opt-row">
+          <label for="optShowHeader">Show info 顯示標題資訊</label>
+          <input type="checkbox" id="optShowHeader" checked>
+        </div>
+        <div class="opt-row">
+          <label for="optAccent">語音口音 Accent</label>
+          <select id="optAccent">
+            <option value="us" selected>US English 美式</option>
+            <option value="uk">UK English 英式</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <!-- PRINT BAR -->
@@ -775,6 +833,91 @@ function esc(s) {
   d.textContent = s;
   return d.innerHTML;
 }
+/* ===== Options panel 排版邏輯（重構 2026-09-20）=====
+   規則（改面板前先讀）：
+   1. 一個 section = 一個決策軸 —— 互相依賴嘅選項唔可以散落兩區（例：格線樣式 + 天草泥字體）
+   2. 子選項：加 class="opt-row sub"（縮排）＋ data-when="<父項>=值1|值2"
+      父項 id 去掉 'opt' 前綴並轉小寫（optGuideStyle → guide；optSection → section）
+   3. 控件一律「label 左、控件右」；checkbox 都放右邊（靠 label for 仍然可 click）
+   4. 每個 section ≤ 6 項；h3 後面加一句灰字副題（.opt-sec-sub）
+   5. 選項 id 永遠唔可以改（JS、localStorage、回歸測試都靠佢）
+*/
+const OPT_DEFAULTS = {
+  optPractice: '4', optGuideStyle: 'standard', optPerRow: 'auto', optSize: 'md', optPrintSize: '2.2cm',
+  optStyle: 'both', optCase: 'both', optSection: 'copybook',
+  optGuide: true, optDotted: false, optCaoniFont: 'edupre', optDedup: true,
+  optTitle: 'English Handwriting Practice', optName: '', optAccent: 'us', optShowHeader: true
+};
+const OPT_PRESETS = {
+  kindy: { label: '幼稚園', set: { optSection: 'letters', optCase: 'both', optStyle: 'print', optSize: 'lg', optPractice: '2', optPerRow: '4', optGuideStyle: 'caoni', optCaoniFont: 'edupre', optDotted: true, optDedup: true, optGuide: true } },
+  p1: { label: '小一', set: { optSection: 'copybook', optCase: 'both', optStyle: 'both', optSize: 'md', optPractice: '3', optPerRow: 'auto', optGuideStyle: 'standard', optGuide: true } },
+  caoni: { label: '天草泥', set: { optSection: 'letters', optStyle: 'print', optSize: 'lg', optPractice: '2', optGuideStyle: 'caoni', optCaoniFont: 'edupre', optDotted: true, optGuide: true } }
+};
+function setOpt(id, v) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (el.type === 'checkbox') el.checked = !!v; else el.value = String(v);
+}
+function applyOptionVisibility() {
+  const val = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const cur = { guide: val('optGuideStyle'), section: val('optSection') };
+  document.querySelectorAll('#optionsPanel [data-when]').forEach(el => {
+    const show = el.getAttribute('data-when').split(',').some(rule => {
+      const i = rule.indexOf('=');
+      if (i < 0) return false;
+      const k = rule.slice(0, i).trim();
+      return rule.slice(i + 1).split('|').some(v => v.trim() === cur[k]);
+    });
+    el.hidden = !show;
+  });
+  syncCaoniFontUI();
+}
+function syncCaoniFontUI() {
+  const dop = document.getElementById('optDotted');
+  const sel = document.getElementById('optCaoniFont');
+  if (!dop || !sel) return;
+  const F = (typeof CAONI_FONTS !== 'undefined') ? CAONI_FONTS[sel.value] : null;
+  dop.disabled = !(F && F.trace);
+  const row = dop.closest('.opt-row') || dop.parentElement;
+  if (row) row.title = (F && F.trace) ? '' : '呢隻字體冇點點版本（只有 Edu AU VIC WA NT Pre 有 Edu Dots）';
+}
+function initOptSections() {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem('engOptSections') || '{}'); } catch (e) {}
+  document.querySelectorAll('#optionsPanel .opt-section').forEach(sec => {
+    if (saved[sec.dataset.sec]) sec.classList.add('collapsed');
+    const h = sec.querySelector('h3');
+    if (!h) return;
+    h.onclick = () => {
+      sec.classList.toggle('collapsed');
+      const st = {};
+      document.querySelectorAll('#optionsPanel .opt-section').forEach(s => {
+        if (s.classList.contains('collapsed')) st[s.dataset.sec] = 1;
+      });
+      try { localStorage.setItem('engOptSections', JSON.stringify(st)); } catch (e) {}
+    };
+  });
+}
+function resetOptions() {
+  Object.keys(OPT_DEFAULTS).forEach(k => setOpt(k, OPT_DEFAULTS[k]));
+  applyOptionVisibility();
+  generate();
+  if (typeof toast === 'function') toast('已重設為預設 Reset done');
+}
+function applyPreset(name) {
+  const p = OPT_PRESETS[name];
+  if (!p) return;
+  Object.keys(p.set).forEach(k => setOpt(k, p.set[k]));
+  applyOptionVisibility();
+  generate();
+  if (typeof toast === 'function') toast(p.label + ' preset 已套用');
+}
+/* 面板任何改動 → 即時更新條件顯示（唔使等 generate） */
+['change', 'input'].forEach(ev => document.addEventListener(ev, e => {
+  if (e.target && e.target.closest && e.target.closest('#optionsPanel')) applyOptionVisibility();
+}));
+window.addEventListener('load', () => { initOptSections(); applyOptionVisibility(); });
+
 function toggleOptions() {
   const p = document.getElementById('optionsPanel');
   p.classList.toggle('show');

@@ -1,5 +1,25 @@
 # Changelog
 
+## 2026-09-20 — v1.14
+
+### Changed — 選項面板排版邏輯重構（用戶要求「深度整理」，全做）
+**問題**：16 個選項分 3 個 section，但依賴關係被切斷（「格線樣式」在 Layout、「天草泥字體／點點描紅」在 Content）；全站只有 1 條條件邏輯，其餘選項永遠顯示（即使零作用）；三個選項都叫「style／字體」；grid 用 `auto-fill` 排出參差行。
+
+**改法**：
+- **4 個決策軸，順序跟工作流**：📝 Content 內容（練咩）→ 🖍 Guides 格線（點顯示）→ 📐 Layout 版面 → 📄 Page 頁面；`optGuideStyle` 由 Layout 搬入 Guides，同天草泥子選項一組
+- **`data-when` 條件顯示機制**：`data-when="guide=caoni|caoni-color"` / `section=letters` → 天草泥字體＋點點描紅只在相關格線模式出現；大小寫／字母去重／每行格數只在 letters 範圍出現（7 個條件節點）
+- **控件統一**：「label 左、控件右」一行（checkbox 同樣放右邊，靠 `label for` 仍可 click）；刪掉 inline `style="flex:0 0 auto"` hack
+- **Grid 改明確 3 欄**（≤900px 2 欄、≤640px 1 欄）；text 輸入用 `.wide` 佔 2 欄
+- **改名去歧義**：`Style 字體` → `Letter style 字體類型`；`Guide style` → `Grid style 格線樣式`；`Print cell size` → `Print cell size 印刷格`（縮短）；`Accent 口音` → `語音口音 Accent`（移到 Page 最尾，因為佢係語音設定）
+- **每個 section 加灰字副題**（一句講清決策軸）
+- **可及性**：16 個 label 全部加 `for`／關聯到現有 id（回歸測試會驗）
+- **新增面板工具列**：🧸 幼稚園 · 🎒 小一 · 🖍 天草泥 三個 preset ＋ ↺ Reset 重設
+- **Section 可摺疊**（狀態存 `engOptSections`；預設全開）
+
+### Verify
+- 回歸 **58 → 68 項**：+10 項面板測試（4 個決策軸及順序、7 條 data-when 顯示／隱藏、摺疊／展開、preset 生效、重設回預設、16 個 label for 全部指到現有 id）
+- 所有選項 id 保持不變（JS、localStorage、測試都靠 id）→ 舊功能 58 項零回歸
+
 ## 2026-09-20 — v1.13
 
 ### Added
