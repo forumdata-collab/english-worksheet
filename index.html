@@ -1508,7 +1508,7 @@ function lineBlockHtml(o, ctx, cfg) {
     const prFonts = fonts.filter((_, i) => ctx.styles[i] === pr.st);
     const w = measureWidth(pr.ch, prFonts);
     let t = pr.ch;
-    if (w > 0 && !cfg.isSentence) {
+    if (w > 0) {
       const n = repeatCount(w);
       if (n > 1) t = Array(n).fill(pr.ch).join('  ');   // 兩個空格做間距
     }
