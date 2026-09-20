@@ -360,6 +360,10 @@ body {
   margin: 8px 0;
   border: 2px solid var(--blue-grid);
   border-top: none;
+  /* 拆行容量以列印版面（A4 703px）為準 → 窄螢幕預覽可能比行寬長。
+     允許橫向捲動，列印不受影響（@media print 會還原 overflow）。 */
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 .word-line .glyph-layer {
   position: absolute; inset: 0; display: flex; align-items: flex-end;
@@ -492,6 +496,8 @@ body {
   }
   .letter-card { break-inside: avoid; page-break-inside: avoid; }
   .word-block { break-inside: avoid; page-break-inside: avoid; }
+  /* 列印時還原橫向捲動（螢幕預覽用嘅 overflow-x 唔應該出現在紙上） */
+  .word-line { overflow: visible !important; }
   .practice-row[data-perrow] .practice-cell {
     flex: 0 0 var(--cell-practice) !important;
     width: var(--cell-practice) !important;
@@ -1328,20 +1334,17 @@ function printCellPx(o) {
 function lineFitCapacity() {
   const el = document.getElementById('wsContent');
   const inner = Math.max(160, (el && el.clientWidth ? el.clientWidth : 904) - 8);   // .word-line 有 2px 邊框
-  // ⚠️ 唔可以再用寫死嘅 ×0.88：佢只在「螢幕 96px 格 + 印刷 2.2cm 格」嗰個組合啱。
-  //    用戶改大「印刷格大小」就會印出界（隱藏 bug），改細就白白蝕 10% 闊度。
-  //    正確做法：把螢幕同列印換算成同一把尺（每行放幾多字），取較嚴嘅一個：
-  //      螢幕每行字數 = inner / 螢幕字級；列印每行字數 = 703px / 列印字級
-  //    字級 ∝ 格大小（兩邊都係「格 × 0.64 × fontScale × 天草泥倍數」，倍數相同會約掉）
-  //    → 只需比較格大小。
-  // ⚠️ wrap 選項唔可以改變拆行容量：HTML 同時服務螢幕同列印，拆行必須以
-  //    兩者都唔溢出為準（取較嚴嘅列印容量）。若跟「螢幕優先」用 full inner，
-  //    列印時同一個 chunk 會超紙邊（螢幕字級 > 列印字級，chunk 在列印更闊），
-  //    結果列印版每行被裁切、留大量空白。screen 選項只係「列印可能超邊界」嘅提示。
+  // ⚠️⚠️ 拆行容量必須以「列印版面」為準，唔可以用螢幕闊度做上限。
+  //    工作紙係為 A4 列印而設：紙內寬 703px，字級亦按同一比例（格 × 0.64 × fontScale）
+  //    縮細。若用螢幕闊度做上限（尤其手機 360–430px），系統會以為一行放唔落整句而
+  //    過度拆行 —— 但列印出嚟明明一行放得落（用戶實測："The quick brown fox jumps
+  //    over the lazy dog." 被拆成 3 段，右邊留 50–70% 空白）。
+  //    所以容量固定 = 列印可用闊度換算成「螢幕字級像素」＝ PRINT_INNER_PX × sizePx / printPx。
+  //    （md: 703 × 96 / 83 ≈ 813px；與螢幕 904px 相比只差 ~10%，螢幕上幾乎不溢出。）
+  //    窄螢幕若真的有溢出，CSS 已讓 .word-line 可橫向捲動，列印不受影響。
   const sizePx = SIZE_PX[(currentOptions || {}).size] || 96;
   const printPx = printCellPx(currentOptions);
-  const ratio = Math.min(1, (PRINT_INNER_PX * sizePx) / (inner * printPx));
-  return Math.max(160, Math.round(inner * ratio));
+  return Math.max(160, Math.round(PRINT_INNER_PX * sizePx / printPx));
 }
 
 function splitToFitLine(text, fonts, maxPx) {
