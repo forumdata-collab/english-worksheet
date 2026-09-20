@@ -678,8 +678,8 @@ body {
         <div class="opt-row">
           <label for="optWrap">Sentence wrap 換行基準</label>
           <select id="optWrap">
-            <option value="print">Print 列印優先（安全）</option>
-            <option value="screen" selected>Screen 螢幕優先（列印可能超邊界）</option>
+            <option value="print" selected>Print 列印優先（安全）</option>
+            <option value="screen">Screen 螢幕優先（列印可能超邊界）</option>
           </select>
         </div>
         <div class="opt-note">換行基準：「列印優先」跟實際印刷格大小計，列印唔會超出紙邊（螢幕長句每行可能留少量空位）；「螢幕優先」填滿螢幕闊度，但列印可能超邊界。</div>
@@ -876,7 +876,7 @@ function esc(s) {
    5. 選項 id 永遠唔可以改（JS、localStorage、回歸測試都靠佢）
 */
 const OPT_DEFAULTS = {
-  optPractice: '4', optGuideStyle: 'standard', optPerRow: 'auto', optSize: 'md', optPrintSize: '2.2cm', optWrap: 'screen',
+  optPractice: '4', optGuideStyle: 'standard', optPerRow: 'auto', optSize: 'md', optPrintSize: '2.2cm', optWrap: 'print',
   optStyle: 'both', optCase: 'both', optSection: 'copybook',
   optGuide: true, optDotted: false, optCaoniFont: 'edupre', optDedup: true,
   optTitle: 'English Handwriting Practice', optName: '', optAccent: 'us', optShowHeader: true
