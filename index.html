@@ -1468,8 +1468,14 @@ function lineBlockHtml(o, ctx, cfg) {
     f: ctx.families[i],
     px: base * (CAONI_ACTIVE ? caoniGeo(st).fs / 100 : 0.64) * cfg.fontScale
   }));
-  const inner = Math.max(160, (document.getElementById('wsContent')?.clientWidth || 904) - 8);
-  const chunks = splitToFitLine(cfg.text, fonts, cfg.isSentence ? Math.round(inner) : lineFitCapacity());
+  // ⚠️ 拆行必須逐 style 獨立量度：print（Andika）同 cursive（Playwrite）闊度差好遠，
+  //    一齊量度取最闊會令句子按 cursive 拆行 → 每行（尤其 print）只佔 ~70% 留大量空白。
+  //    每個 style 用自己嘅字體同字級拆，兩者各自填滿行寬。
+  const capPx = lineFitCapacity();
+  const chunksByStyle = {};
+  ctx.styles.forEach((st, i) => {
+    chunksByStyle[st] = splitToFitLine(cfg.text, [fonts[i]], capPx);
+  });
   const wrapStyle = cfg.wrapStyle || '';
   const layerCls = cfg.layerCls ? ' ' + cfg.layerCls : '';
   const layerStyle = cfg.layerStyle || '';
@@ -1481,17 +1487,16 @@ function lineBlockHtml(o, ctx, cfg) {
   html += ` <button class="btn-ghost" onclick="showStrokes('${arg}')">✍️ Show 筆順</button>`;
   html += `</div>`;
 
-  // 示範行（每 style × 每 chunk 一行）
-  ctx.styles.forEach(st => chunks.forEach(ch => {
+  // 示範行（每 style × 該 style 嘅 chunk 一行）
+  ctx.styles.forEach(st => chunksByStyle[st].forEach(ch => {
     html += `<div class="word-line"${wrapStyle ? ` style="${wrapStyle}"` : ''}>${guideSvg(undefined, st)}` +
       `<div class="glyph-layer${layerCls}"${layerStyle ? ` style="${layerStyle}"` : ''}>` +
       `${glyphSpansHtml(ch, st, 'demo-glyph')}</div></div>`;
   }));
 
-  // 練習行 — 循環 style × chunk；短詞（寬度遠細於行容量）自動重複填滿整行
+  // 練習行 — 循環 style × 該 style 嘅 chunk；短詞（寬度遠細於行容量）自動重複填滿整行
   const pairs = [];
-  ctx.styles.forEach(st => chunks.forEach(ch => pairs.push({ st, ch })));
-  const capPx = lineFitCapacity();
+  ctx.styles.forEach(st => chunksByStyle[st].forEach(ch => pairs.push({ st, ch })));
   // 重複次數計算：一行除咗示範外，練習行將短詞重複 N 次（間距 = 1.2 個字級）
   const repeatCount = (w) => {
     if (w <= 0) return 1;
